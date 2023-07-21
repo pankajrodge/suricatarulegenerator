@@ -1,0 +1,16 @@
+{
+    "common": {
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
+    },
+    "content": {
+        "supported_options": ["nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
+        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract"],
+        "form_controm_name": "content_modifier"
+    },
+    "meta_keyword":{
+        "supported_options": ["gid", "classtype"],
+        "supported_options_table_headers":["Select Meta Keyword", "Specify value / Select Options", "Add"],
+        "content_filter_table_headers":["Meta Keyword", "Value"],
+        "form_controm_name": "meta_keyword"
+    }
+}

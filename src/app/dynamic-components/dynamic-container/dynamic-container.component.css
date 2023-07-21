@@ -1,0 +1,22 @@
+.black-border{
+    border: 1px solid black;
+}
+:host{
+    display: block;
+    border: 1px solid black;
+}
+
+
+ul li:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+ul li:first-child:hover {
+    border-top-right-radius: 1rem;
+    border-top-left-radius: 1rem;
+}
+
+ul li:last-child:hover {
+    border-bottom-right-radius: 1rem;
+    border-bottom-left-radius: 1rem;
+}

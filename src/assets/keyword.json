@@ -1,0 +1,483 @@
+{
+    "fast_pattern": {
+        "html_tag_type": "na"
+    },
+    "file_data": {
+        "html_tag_type": "na"
+    },
+    "flow_direction": {   
+        "lable_descrption": "Flow Direction",
+        "html_tag_type": "drop_down",
+        "drop_down_list": ["single", "both"],
+        "is_mandatory": true
+    },
+    "gid": {
+        "html_tag_type": "text",
+        "key_value_separator": ":",
+        "meta_keyword": true
+    },
+    "classtype": {
+        "html_tag_type": "drop_down",
+        "drop_down_list": ["web-application-attack", "not-suspicious", "bad-unknown", "misc-activity"],
+        "meta_keyword": true
+    },
+    "bypass": {
+        "html_tag_type": "na"
+    },
+    "fast_pattern_only": {
+        "html_tag_type": "na",
+        "store_value_as": "fast_pattern:only"
+    },
+    "fast_pattern_chop": {
+        "html_tag_type": "text",
+        "store_value_as": "fast_pattern"
+    },
+
+    "nocase": {
+        "html_tag_type": "na"
+    },
+
+    "depth": {
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "pcre": {
+        "html_tag_type": "text"
+    },
+    "replace":{
+        "html_tag_type": "text"
+    },
+    "startswith": {
+        "html_tag_type": "na"
+    },
+    "endswith": {
+        "html_tag_type": "na"
+    },
+    "offset": {
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "distance": {
+        "html_tag_type": "text"
+    },
+    "within": {
+        "html_tag_type": "text"
+    },
+    "isdataat": {
+        "html_tag_type": "text_with_checkbox",
+        "check_box_value": "relative"
+    },
+
+    "bsize": {
+        "html_tag_type": "dropdown_with_text",
+        "drop_down_list": ["=", ">", "<", "range"]
+    },
+    "dsize": {
+        "html_tag_type": "dropdown_with_text",
+        "drop_down_dict": {
+                "=": "", 
+                ">": ">",
+                "<":"<",
+                 ">=":">=", 
+                 "<=":"<=", 
+                 "range": "range"
+
+        }
+    },
+
+    "byte_test": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "order": ["text", "drop_down", "text", "text", "check_box", "drop_down", "drop_down", "check_box", "text"],
+        "mandatory_option": ["number_of_bytes*", "operator*", "value*"],
+        "order_name": ["number_of_bytes*", "operator*", "value*", "offset", "relative", "endian", "string_representation", "dce", "bitmask"],
+        "value_seperator": ",",
+        "drop_down_dict": {
+            "operator*": {
+                "None": "", 
+                "=": "=", 
+                ">": ">",
+                "<":"<",
+                 ">=":">=", 
+                 "<=":"<=", 
+                 "!=":"!=",
+                 "&": "&",
+                 "|": "|"
+                },
+            "endian": {
+                "None": "", 
+                "big": "big", 
+                "little": "little"
+            },
+            "string_representation": {
+                "None": "",
+                "hex": "hex",
+                "dec": "dec",
+                "oct": "oct"
+            }
+        }
+    },
+
+
+    "byte_math": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "order": ["text", "text", "drop_down", "text", "text", "check_box", "drop_down", "drop_down", "check_box", "text"],
+        "order_name": ["number_of_bytes", "offset", "oper", "rvalue", "result", "relative", "endian", "string_representation", "dce", "bitmask"],
+        "value_seperator": ",",
+        "drop_down_dict": {
+            "oper": {
+                "+": "+", 
+                "-": "-",
+                "*":"*",
+                 "/":"/", 
+                 "<<":"<<", 
+                 ">>":">>"
+                },
+            "endian": {
+                "None": "", 
+                "big": "big", 
+                "little": "little"
+            },
+            "string_representation": {
+                "None": "",
+                "hex": "hex",
+                "dec": "dec",
+                "oct": "oct"
+            }
+        }
+    },
+    "byte_jump": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "value_seperator": ",",
+        "order": ["text", "text", "check_box", "text", "drop_down", "drop_down", "check_box", "check_box", "check_box", "text", "check_box", "text"],
+        "order_name": ["number_of_bytes", "offset", "relative", "multiplier", "endian", "string_representation", "align", "from_beginning", "from_end", "post_offset", "dce", "bitmask"],
+        "drop_down_dict": {
+            "endian": {
+                "None": "", 
+                "big": "big", 
+                "little": "little"
+            },
+            "string_representation": {
+                "None": "",
+                "hex": "hex",
+                "dec": "dec",
+                "oct": "oct"
+            }
+        }
+    },
+    "byte_extract": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "value_seperator": ",",
+        "order": ["text", "text",  "text", "check_box", "text", "drop_down", "check_box", "drop_down", "text"],
+        "order_name": ["number_of_bytes", "offset", "var_name", "relative", "multiplier", "endian", "dce", "string_representation", "align"],
+        "drop_down_dict": {
+            "endian": {
+                "None": "", 
+                "big": "big", 
+                "little": "little"
+            },
+            "string_representation": {
+                "None": "",
+                "hex": "hex",
+                "dec": "dec",
+                "oct": "oct"
+            }
+        }
+    },
+    "http.request_line": {
+        "sticky_buffer": true,
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within", "to_md5", "to_sha1", "to_sha256", "pcrexform", "flowbits", "flowint", "stream_size"]
+    },
+
+    "http.method": {
+        "html_tag_type": "drop_down",
+        "drop_down_list": ["GET", "POST", "PUT", "HEAD", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"],
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.uri": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within", "byte_test", "isdataat", "bsize", "base64_decode"],
+        "sticky_buffer": true
+    },
+    
+    "http.uri.raw": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+    },
+    "urilen": {
+        "html_tag_type": "drop_down_with_text",
+        "drop_down_list": ["=", ">", "<", "range"]
+    },    
+    "http.protocol": {
+        "html_tag_type": "drop_down",
+        "drop_down_list": ["HTTP/1.0", "HTTP/1.1", "HTTP/1.2"],
+        "sticky_buffer": true
+    },
+    "http.header": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within", "pcre"],
+        "sticky_buffer": true
+    },
+    "http.cookie": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.user_agent": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+    },
+    "http.accept": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.accept_enc": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.accept_lang": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.connection": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.content_type": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.header.raw": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.content_len": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.referer": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.start": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.header_names": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.request_body": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["distance", "offset", "nocase", "within"]
+    },
+    "http.stat_code": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.stat_msg": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+    },
+    "http.response_line": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "http.response_body": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+    },
+    "http.server": {
+        "html_tag_type": "text",
+        "sticky_buffer": true
+    },
+    "http.location": {
+        "html_tag_type": "text",
+        "sticky_buffer": true
+    },
+    "http.host": {
+        "html_tag_type": "text",
+        "sticky_buffer": true,
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within", "bypass"]
+    },
+    "http.host.raw": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+    },
+    "file.data": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
+    },
+    "dotprefix": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "strip_whitespace": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "compress_whitespace": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "to_md5": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "to_sha1": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "to_sha256": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "pcrexform": {
+        "html_tag_type": "text",
+        "transformation": true
+    },
+    "url_decode": {
+        "html_tag_type": "na",
+        "transformation": true
+    },
+    "flowbits": {
+        "html_tag_type": "dropdown_with_text",
+        "drop_down_list": ["set","isset","toggle", "unset", "isnotset", "noalert"],
+        "order_name": ["selected", "text"],
+        "key_value_seperator": ",",
+        "no_text": ["noalert"]
+    },
+
+    "flow": {
+        "html_tag_type": "check_box_list",
+        "check_box_list": ["to_client", "to_server", "from_client", "from_server", "established", 
+        "not_established", "stateless", "only_stream", "no_stream", "only_frag", "no_frag"],
+        "value_seperator": ",",
+        "lable_descrption": "Flow"
+    },
+
+
+    "flowint": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "order": ["text", "drop_down", "text"],
+        "order_name": ["flowinit_name", "operator", "value"],
+        "disable_order_when_condition": {
+            "value": "operator=[isset,notset]"
+        },
+        "drop_down_dict": {
+            "operator": {
+                "=": "", 
+                ">": ">",
+                "<":"<",
+                 ">=":">=", 
+                 "<=":"<=", 
+                 "!=":"!=",
+                 "+": "+",
+                 "-": "-",
+                 "isset": "isset",
+                 "notset": "notset"
+                }
+        }
+    },
+
+    "stream_size": {
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "order": ["drop_down", "drop_down", "text"],
+        "order_name": ["traffic_from", "operator", "value"],
+        "drop_down_dict": {
+            "operator": {
+                "=": "", 
+                ">": ">",
+                "<":"<",
+                 ">=":">=", 
+                 "<=":"<=", 
+                 "!=":"!="
+                },
+            "traffic_from": {
+                "server": "server",
+                "client": "client",
+                "both": "both",
+                "either": "either"
+            }
+        }
+    },
+
+    "base64_decode":{
+        "html_tag_type": "ordered_tag_mandator_optional",
+        "order": ["text", "text", "check_box", "text"],
+        "order_name": ["bytes", "offset", "relative", "content"]
+    },
+    "base64_data":{
+        "html_tag_type": "text"
+    },
+    "source_ip": {
+        "lable_descrption": "Source IP/Network",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "source_port": {
+        "lable_descrption": "Source Ports",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "destination_ip": {
+        "lable_descrption": "Destination IP/Network",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "destination_port": {
+        "lable_descrption": "Destination Ports",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "msg": {
+        "lable_descrption": "Alert Message",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "sid": {
+        "lable_descrption": "Signature ID",
+        "html_tag_type": "text",
+        "is_mandatory": true
+    },
+    "rev": {
+        "lable_descrption": "Revision Number",
+        "html_tag_type": "text"
+    },
+    "action": {
+        "html_tag_type": "drop_down",
+        "drop_down_list": ["alert", "pass", "drop", "reject", "rejectsrc", "rejectdst", "rejectboth"],
+        "lable_descrption": "Action",
+        "is_mandatory": true
+    },
+    "ttl":{
+        "html_tag_type": "text"
+    },
+    "filename": {
+        "html_tag_type": "text"
+    },
+    "fileext": {
+        "html_tag_type": "text"
+    },
+    "filemagic": {
+        "html_tag_type": "text"
+    },
+    "filestore": {
+        "html_tag_type": "text"
+    }
+
+}

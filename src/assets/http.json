@@ -1,0 +1,39 @@
+{
+    "common": {
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
+    },
+    "content": {
+        "supported_options": ["nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
+        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace", 
+        "fast_pattern", "fast_pattern_only", "flowbits", "flowint", "stream_size"],
+        "form_control_name": "content_modifier"
+    },
+    "http_request_parameters": {
+        "supported_options": ["http.uri", "http.uri.raw", "http.method", "http.request_line", "http.request_body", "http.header", 
+        "http.header.raw", "http.cookie", "http.user_agent", "http.host", "http.host.raw", "http.accept", "http.accept_lang", 
+        "http.accept_enc", "http.referer", "http.connection", "file.data", "http.content_type", "http.content_len", "http.start",
+        "http.protocol", "http.header_names"
+    ],
+        "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Description"],
+        "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+        "content_filter_table_headers":["HTTP Parameter", "Content Value", "Content Modifier", "Content Condition", "Negate Content"],
+        "form_control_name": "http_request_parameters"
+    },
+    "http_response_parameters": {
+        "supported_options": ["http.stat_msg", "http.stat_code", "http.response_line", "http.header", "http.header.raw", "http.cookie", 
+        "http.response_body", "http.server", "http.location", "file.data", "http.content_type", "http.content_len", 
+        "http.start", "http.protocol", "http.header_names"],
+        "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Description"],
+        "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+        "content_filter_table_headers":["HTTP Parameter", "Content Value", "Content Modifier", "Content Condition", "Negate Content"],
+        "form_control_name": "http_response_parameters"
+    },
+    "meta_keyword":{
+        "supported_options": ["gid", "classtype"],
+        "supported_options_table_headers":["Select Meta Keyword", "Specify value / Select Options", "Add"],
+        "content_filter_table_headers":["Meta Keyword", "Value"],
+        "form_control_name": "meta_keyword"
+    }
+}
+
+

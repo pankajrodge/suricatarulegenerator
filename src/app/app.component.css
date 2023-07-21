@@ -1,0 +1,32 @@
+h1 {
+    height: 100%;
+    margin-top: 50px;
+    display: flex;
+    margin-left: 250px;
+  }
+  table {
+    margin-left: 100px;
+    display: flex;
+    
+  }
+
+  label {
+    font-size: medium;
+  }
+
+  .container {
+    width: 150%;
+    display: flex;
+    text-align: center;
+  }
+  
+  .container::after {
+    content: "\002D";
+  }
+  .container::before {
+    content: "\002D";
+  }
+
+  body {
+    background-color: lightblue;
+  }
