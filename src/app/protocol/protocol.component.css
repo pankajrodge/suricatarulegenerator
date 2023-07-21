@@ -1,0 +1,96 @@
+table {
+    border-collapse: collapse;
+    border: 1px solid black;
+  }
+  .form-field {
+    margin-top: 50px;
+    margin-left: 100px;
+    background-color: lightblue;
+  }
+
+  .button-marging {
+    margin-left: 150px;
+    background-color: black;
+    color: white;
+  }
+  .wrap-text {
+    word-wrap: break-word;
+    width: 400px;
+  }
+
+  td {
+    border: 1px solid black;
+    padding: 8px;
+    width: 200px;
+    
+  }
+
+  th {
+    border: 1px solid black;
+    padding: 8px;
+    width: 100px;
+  }
+
+  textarea {
+    height: 70px; 
+    width: 700px
+  }
+  label {
+    width: 150px;
+    text-align: right;
+    margin-right: 10px;
+  }
+
+  .label-error-mesage {
+    width: 150px;
+    text-align: right;
+    margin-left: 20px;
+    color: red;
+  }
+
+  .form-group {
+    display: flex;
+    align-items: center;
+  }
+
+  .fixed-width-label {
+    display: inline-block;
+    width: 150px;
+    text-align: left;
+    white-space: pre;
+  }
+  
+  .fixed-width-label::after {
+    content: "\00A0"; /* Non-breaking space */
+  }
+  
+
+  .fixed-width-content-label {
+    display: inline-block;
+    width: 250px;
+    text-align: left;
+    white-space: pre;
+  }
+  
+  .fixed-width-content-label::after {
+    content: "\00A0"; /* Non-breaking space */
+  }
+  
+  .img {
+    width: 10px;
+    height:10px
+  }
+
+  .help-message {
+    position: absolute;
+    top: 50px;
+    left: 800px;
+    width: 400px;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+  }
+  
+  .help-button {
+    cursor: pointer;
+  }
