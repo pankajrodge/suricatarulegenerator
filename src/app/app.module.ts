@@ -14,12 +14,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { HttpComponent } from './http/http.component';
 import { CommonModule } from '@angular/common';
+import { ProtocolComponent } from './protocol/protocol.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HtmlCustomPipePipe,
-    HttpComponent
+    HttpComponent,
+    ProtocolComponent
   ],
   imports: [
     BrowserModule,

@@ -143,6 +143,13 @@
                 "dec": "dec",
                 "oct": "oct"
             }
+        },
+        "save_user_input_with_prefix_as": {
+            "number_of_bytes": "bytes ",
+            "offset": "offset ",
+            "oper": "oper ",
+            "rvalue": "rvalue ",
+            "result": "result "
         }
     },
     "byte_jump": {
@@ -162,6 +169,12 @@
                 "dec": "dec",
                 "oct": "oct"
             }
+        },
+        "save_user_input_with_prefix_as": {
+            "post_offset": "post_offset ",
+            "string_representation": "string ",
+            "multiplier": "multiplier ",
+            "bitmask": "bitmask "
         }
     },
     "byte_extract": {

@@ -427,9 +427,19 @@ export class ProtocolComponent implements OnInit {
               // match criteria and doesnot contain value & contain the order tag value
               for(let orderName of this.jsonData_keyword[match_criteria]['order_name']) {
                 if (temp_order_tag[orderName] !== undefined && temp_order_tag[orderName] != '') {
-                  temp_string_list.push(temp_order_tag[orderName])
+                  if(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"]) {
+                    if(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"][orderName]) {
+                      temp_string_list.push(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"][orderName] + temp_order_tag[orderName])
+                    } else {
+                      temp_string_list.push(temp_order_tag[orderName])
+                    }
+                  } else {
+                    temp_string_list.push(temp_order_tag[orderName])
+                  }
+                  
                 }
               }
+
               this.global_content_modifier_final_dict[row][match_criteria] = temp_string_list.join(value_seperator)
               this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+temp_string_list.join(value_seperator), negate_match])
               }
@@ -1154,7 +1164,6 @@ async checkRules() {
 
 
 get_help_string(key:keyof typeof constants): string {
-  //console.log(key)
   if(constants[key]) {
     return constants[key]
   }
@@ -1167,12 +1176,10 @@ toggleHelp(field: string): void {
     if(f != field) {
       this.common_part_error_message_dict[f]["showHelpMessage"] = false
     }
-
   }
   if (field != 'all') {
     this.common_part_error_message_dict[field]["showHelpMessage"] = !this.common_part_error_message_dict[field]["showHelpMessage"]
   }
-  
 }
 
 

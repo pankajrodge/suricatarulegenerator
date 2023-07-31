@@ -23,6 +23,35 @@ You can assign IP addresses, (both IPv4 and IPv6 are supported) and IP ranges. T
 Rule usage examples: <br><br>
 <img width="400" height="200" src="../assets/images/ip2.png" alt="Image"> <br><br>
 `
+export const pcre = `
+<b><u>pcre :</u></b><br>
+The keyword pcre matches specific on regular expressions. <br>
+More information about regular expressions can be found here http://en.wikipedia.org/wiki/Regular_expression.
+<br><br>
+Format of pcre: <br>
+pcre:"/&lt;regex&gt;/opts"; <br>
+
+Example of pcre. In this example there will be a match if the payload contains six numbers following: <br><br>
+pcre:"/[0-9]{6}/";
+<br>
+There are a few qualities of pcre which can be modified:<br>
+<ul>
+<li>By default pcre is case-sensitive.</li>
+<li>The . (dot) is a part of regex. It matches on every byte except for newline characters.</li>
+<li>By default the payload will be inspected as one line.</li>
+</ul>
+
+<br><br>
+These qualities can be modified with the following characters: <br>
+i    pcre is case insensitive<br>
+s    pcre does check newline characters<br>
+m    can make one line (of the payload) count as two lines<br>
+
+<br> 
+These options are perl compatible modifiers. To use these modifiers, you should d  \
+
+The checksums will be recalculated by Suricata and changed after the replace keyword is being used.
+`
 
 export const source_port = `
 <b><u>Source Port:</u></b><br>
@@ -209,6 +238,7 @@ The distance and within can be very well combined in a signature. If you want Su
 `
 
 export const isdataat=`
+<b><u>isdataat:</u></b><br>
 The purpose of the isdataat keyword is to look if there is still data at a specific part of the payload. 
 The keyword starts with a number (the position) and then optional followed by 'relative'.
 You use the option 'relative' to know if there is still data at a specific part of the payload relative to the last match.
@@ -222,6 +252,7 @@ isdataat:50, relative;<br>
 `
 
 export const bsize=`
+<b><u>bsize:</u></b><br>
 With the bsize keyword, you can match on the length of the buffer. 
 <br><br>An optional operator can be specified; if no operator is present, the operator will default to '='. 
 When a relational operator is used, e.g., '<', '>' or '<>' (range), the bsize value will be compared using the relational operator. Ranges are inclusive.
@@ -237,6 +268,7 @@ bsize:<lo-number><><hi-number>;<br>
 `
 
 export const dsize=`
+<b><u>dsize:</u></b><br>
 With the dsize keyword, you can match on the size of the packet payload/data. 
 You can use the keyword for example to look for abnormal sizes of payloads which are equal to some n i.e. 'dsize:n'
 This may be convenient in detecting buffer overflows.<br>
@@ -247,6 +279,7 @@ dsize:[<>]number; || dsize:min<>max;<br>
 `
 
 export const byte_test=`
+<b><u>byte_test:</u></b><br>
 The byte_test keyword extracts <b>&lt;num of bytes&gt;</b> and performs an operation selected with <b>&lt;operator&gt;</b> against the value in <b>&lt;test value&gt;</b> at a particular 
 <b>&lt;offset&gt;</b>. 
 The <b>&lt;bitmask value&gt;</b> is applied to the extracted bytes 
@@ -258,7 +291,27 @@ byte_test:<b>&lt;num of bytes&gt;</b>, [!]<b>&lt;operator&gt;</b>, <b>&lt;test v
 <br>
 <img width="500" height="500" src="../assets/images/byte_test2.png" alt="Image"> <br><br>
 `
+export const byte_math=`
+<b><u>byte_math:</u></b><br>
+The byte_math keyword adds the capability to perform mathematical operations on extracted values with an existing variable or a specified value.
 
+When relative is included, there must be a previous content or pcre match.
+
+Note: if oper is / and the divisor is 0, there will never be a match on the byte_math keyword.
+
+The result can be stored in a result variable and referenced by other rule options later in the rule.<br><br>
+
+<img width="400" height="200" src="../assets/images/bytemath1.png" alt="Image"> <br><br>
+
+Format:<br><br>
+
+byte_math:bytes &lt;num of bytes&gt; | &lt;variable-name&gt; , offset &lt;offset&gt;, oper &lt;operator&gt;, rvalue &lt;rvalue&gt;, \
+      result &lt;result_var&gt; [, relative] [, endian &lt;endian&lt;] [, string &lt;number-type&gt;] \
+      [, dce] [, bitmask &lt;value&gt;];
+
+<br><br>
+<img width="400" height="400" src="../assets/images/bytemath2.png" alt="Image"> <br><br>
+`
 export const http_header=`
 With the http.header content modifier, it is possible to match specifically and only on the HTTP header buffer. This contains all of the extracted headers in a single buffer.
 The modifier can be used in combination with other content modifiers, like depth, distance, offset, nocase and within
