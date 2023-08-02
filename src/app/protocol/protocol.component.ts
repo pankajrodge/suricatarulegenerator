@@ -354,6 +354,8 @@ export class ProtocolComponent implements OnInit {
 
         this.global_content_modifier_final_dict[row]["negate_match"] = negate_match
 
+
+
         if (match_criteria ===undefined && value_of_match_criteria === undefined && is_relative === undefined 
           && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined) {
             //single type value is assigned.
@@ -374,7 +376,7 @@ export class ProtocolComponent implements OnInit {
         if (match_criteria !==undefined && value_of_match_criteria === undefined && is_relative === undefined 
           && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined && this.jsonData_keyword[match_criteria].html_tag_type !='ordered_tag_mandator_optional') {
             //single type value is assigned.
-            this.global_content_modifier_final_dict[row][match_criteria] = true
+              this.global_content_modifier_final_dict[row][match_criteria] = true
             //console.log(temp_string)
             this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria, negate_match])
           }

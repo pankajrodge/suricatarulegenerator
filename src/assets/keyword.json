@@ -24,13 +24,11 @@
     "bypass": {
         "html_tag_type": "na"
     },
-    "fast_pattern_only": {
-        "html_tag_type": "na",
-        "store_value_as": "fast_pattern:only"
+    "fast_pattern:only": {
+        "html_tag_type": "na"
     },
     "fast_pattern_chop": {
-        "html_tag_type": "text",
-        "store_value_as": "fast_pattern"
+        "html_tag_type": "text"
     },
 
     "nocase": {

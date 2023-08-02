@@ -312,6 +312,86 @@ byte_math:bytes &lt;num of bytes&gt; | &lt;variable-name&gt; , offset &lt;offset
 <br><br>
 <img width="400" height="400" src="../assets/images/bytemath2.png" alt="Image"> <br><br>
 `
+
+export const byte_jump=` 
+The byte_jump keyword allows for the ability to select a &lt;num of bytes&gt; from an &lt;offset&gt; 
+and moves the detection pointer to that position. Content matches will then be based off the new position.
+
+<br><br>Format:<br><br>
+
+byte_jump:bytes &lt;num of bytes&gt; | &lt;variable-name&gt;,  &lt;offset&gt; [, relative], [, multiplier &lt;mult_value&glt;]
+[, endian &lt;endian&lt;] [, string &lt;num_type&gt;][, align][, from_beginning][, from_end] 
+[, post_offset &lt;value&gt;][, dce][, bitmask &lt;value&gt;];
+
+
+<br><br>
+<img width="400" height="400" src="../assets/images/byte_jump.png" alt="Image"> <br><br>
+`
+
+export const strip_whitespace=`
+It remmoves leading and trailing white space from the payload
+`
+
+
+export const compress_whitespace=`
+Compresses all consecutive whitespace into a single space.`
+
+export const to_md5=`
+Takes the buffer, calculates the MD5 hash and passes the raw hash value on.
+`
+
+export const to_sha1=`
+Takes the buffer, calculates the SHA-1 hash and passes the raw hash value on.
+`
+
+export const to_sha256=`
+Takes the buffer, calculates the SHA-256 hash and passes the raw hash value on.
+`
+
+export const fast_pattern=`
+Only one content of a signature will be used in the Multi Pattern Matcher (MPM). 
+If there are multiple contents, then Suricata uses the 'strongest' content. 
+This means a combination of length, how varied a content is, and what buffer it is looking in. 
+Generally, the longer and more varied the better. 
+<br><br>
+Sometimes a signature writer concludes he wants Suricata to use another content than it does by default.
+<br><br>
+For instance:
+<br><br>
+
+User-agent: Mozilla/5.0 Badness;<br>
+content:"User-Agent|3A|";<br>
+content:"Badness"; distance:0;<br><br>
+
+In this example you see the first content is longer and more varied than the second one, 
+so you know Suricata will use this content for the MPM. 
+Because 'User-Agent:' will be a match very often, and 'Badness' appears less often in network traffic, 
+you can make Suricata use the second content by using 'fast_pattern'.
+
+<br><br>
+content:"User-Agent|3A|";<br>
+content:"Badness"; distance:0; fast_pattern;
+<br>
+The keyword fast_pattern modifies the content previous to it.
+<br><br>
+<img width="400" height="100" src="../assets/images/fastpattern.png" alt="Image"> <br><br>
+
+`
+
+export const byte_extract=`
+The byte_extract keyword extracts &lt;num of bytes&gt; at a particular &lt;offset&gt; and stores it in &lt;variable-name&gt;. 
+The value in &lt;variable-name&gt; can be used in any modifier that takes a number as an option and in the case of byte_test it can be used as a value.
+
+<br><br>Format:<br><br>
+byte_extract:&lt;num of bytes&gt;,  &lt;offset&gt;,  &lt;variable-name&gt;., [,relative] [, multiplier &lt;mult_value&gt;]
+      [,&lt;endian&lt;] [, dce] [, string [, &lt;num_type&gt;] [, align &lt;align-value&gt;];
+
+<br><br>
+<img width="400" height="300" src="../assets/images/byte_extract.png" alt="Image"> <br><br>
+      
+`
+
+
 export const http_header=`
 With the http.header content modifier, it is possible to match specifically and only on the HTTP header buffer. This contains all of the extracted headers in a single buffer.
 The modifier can be used in combination with other content modifiers, like depth, distance, offset, nocase and within
