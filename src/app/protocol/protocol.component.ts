@@ -611,7 +611,7 @@ export class ProtocolComponent implements OnInit {
 
 globalHttpDict:any = {}
 httpNgModelSelectDict:any = {}
-data_parameter:string[] = ['http_request_parameters', 'http_response_parameters', 'meta_keyword']
+data_parameter:string[] = ['http_request_parameters', 'http_response_parameters', 'meta_keyword', 'tcp_parameters']
 dataDict:any = {}
 
 
@@ -695,9 +695,20 @@ negate_http_content(event:any, http_options:any) {
 
 
 addHttpContentModifier(http_options_tabel:any, options:any) {
+  /*
   for(let h of this.data_parameter) {
     this.globalHttpDict[h]['showErrorMessage'] = false
     this.globalHttpDict[h]['errorMessage'] = ''
+  }
+  */
+
+  for(let h in this.jsonData_http3) {
+    if(h == "common" || h=="content") {
+      continue
+    } else {
+      this.globalHttpDict[h]['showErrorMessage'] = false
+      this.globalHttpDict[h]['errorMessage'] = ''
+    }
   }
 
   if(options === undefined || options =='') {
@@ -745,8 +756,12 @@ addAndCreateFormControl(http_options:any, option1:any, option2:any, option3:any,
     
   
     
-
+    console.log("HTTP DATA DICT")
     console.log(this.dataDict)
+
+    if (this.protocol.toLowerCase() == 'http'){
+
+    }
     this.processDataDict() 
     //this.clear_selected_option(http_options)
     
@@ -825,6 +840,7 @@ processDataDict() {
         let content_modifier_value = row[4]
         let negate_match = row[5]
         let negate_char = ''
+        let new_normalized_string = ''
 
         if(negate_match) {
           negate_char = '!'
@@ -834,23 +850,42 @@ processDataDict() {
           temp_dict[http_options][supp_option] ={}
         }
 
+        if(this.jsonData_keyword[supp_option]["no_content"]) {
+          temp_dict[http_options][supp_option] ={}
+        } 
+
         if(! temp_dict[http_options][supp_option][content_match]) {
           temp_dict[http_options][supp_option][content_match] ={}
           temp_dict[http_options][supp_option][content_match]["dict"] ={}
           temp_dict[http_options][supp_option][content_match]["rows"] = []
         }
 
+        
+        if(this.isValueRequiredInDoubleQuotes(supp_option)) { 
+          new_normalized_string = this.normalizeTheContentString(content_match, true)
+        } else {
+          new_normalized_string = this.normalizeTheContentString(content_match, false)
+        }
+
         if(content_modifier === undefined && content_modifier_value === undefined) {
-          if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";" + negate_char +this.normalizeTheContentString(content_match)
-          }else {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + this.normalizeTheContentString(content_match)
+          if(this.jsonData_keyword[supp_option]["no_content"]) {
+            temp_dict[http_options][supp_option][content_match]["dict"][supp_option] = negate_char + new_normalized_string
+            temp_dict[http_options][supp_option][content_match]["rows"].push(supp_option+ ':' + negate_char + new_normalized_string)
+          
+          } else {
+            if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
+              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] 
+              + ";" + negate_char + new_normalized_string
+            }else {
+              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string
+            }
+            temp_dict[http_options][supp_option][content_match]["rows"].push('content:' + negate_char + new_normalized_string)
           }
           
-          temp_dict[http_options][supp_option][content_match]["rows"].push('content:' + negate_char + this.normalizeTheContentString(content_match))
+
         } else if (content_modifier !== undefined && content_modifier_value === undefined) {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] =  negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier
-            temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier)
+            temp_dict[http_options][supp_option][content_match]["dict"]['content'] =  negate_char + new_normalized_string+ ';' + content_modifier
+            temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier)
         } else if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
               let temp_string_list: string[] = []
               let value_seperator = ","
@@ -866,19 +901,19 @@ processDataDict() {
               if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
                 temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";"+ content_modifier+ ":" + temp_string_list.join(value_seperator)
               }else {
-                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator)
+                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator)
               }
 
-              temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator))
+              temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator))
         } if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'string') {
 
           if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
             temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";" + content_modifier + ':' + content_modifier_value
           }else {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier + ':' + content_modifier_value
+            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value
           }
 
-          temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + this.normalizeTheContentString(content_match) + ';' + content_modifier + ':' + content_modifier_value)
+          temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value)
         }
         //supp_option, content_match , content modifier , contet_modifier value
         if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
@@ -956,23 +991,32 @@ generate_rule_format(temp_dict:any) {
             } 
 
             for(let key in temp_dict[http_options][supp_option][content_match]["dict"]) {
-              temp_content = key + ":" + temp_dict[http_options][supp_option][content_match]["dict"][key]
-              if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
-                console.log(supp_option + ';' + temp_content)
-                temp_data_dict[form_control_name].push(supp_option + ';' + temp_content)
+              if(this.jsonData_keyword[supp_option]["no_content"]) {
+                temp_content = key + ":" + temp_dict[http_options][supp_option][content_match]["dict"][key]
+                temp_data_dict[form_control_name].push(temp_content)
               } else {
-                console.log(temp_content + ';' + supp_option)
-                temp_data_dict[form_control_name].push(temp_content + ';' + supp_option)
-              }
+                temp_content = key + ":" + temp_dict[http_options][supp_option][content_match]["dict"][key]
+                if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
+                  console.log(supp_option + ';' + temp_content)
+                  temp_data_dict[form_control_name].push(supp_option + ';' + temp_content)
+                } else {
+                  console.log(temp_content + ';' + supp_option)
+                  temp_data_dict[form_control_name].push(temp_content + ';' + supp_option)
+                }
+             }
             }
 
             for(let r of temp_dict[http_options][supp_option][content_match]["rows"]) {
-              if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
-                console.log(supp_option + ';' + temp_content)
-                temp_data_dict["rows"][form_control_name].push(supp_option + ';' + r)
+              if(this.jsonData_keyword[supp_option]["no_content"]) {
+                temp_data_dict["rows"][form_control_name].push(r)
               } else {
-                console.log(temp_content + ';' + supp_option)
-                temp_data_dict["rows"][form_control_name].push(r + ';' + supp_option)
+                if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
+                  console.log(supp_option + ';' + temp_content)
+                  temp_data_dict["rows"][form_control_name].push(supp_option + ';' + r)
+                } else {
+                  console.log(temp_content + ';' + supp_option)
+                  temp_data_dict["rows"][form_control_name].push(r + ';' + supp_option)
+                }
               }
 
             }
@@ -999,7 +1043,7 @@ getHexValue(c:string) {
   }
   return hex
 }
-normalizeTheContentString(content_string:string): string {
+normalizeTheContentString(content_string:string, double_quotes:boolean=true): string {
   let newstring: string = ''
   let string_length = content_string.length
   let char_list = content_string.split('')
@@ -1022,7 +1066,12 @@ normalizeTheContentString(content_string:string): string {
   }
 
   newstring = newstring.replace(/\|\|/g, ' ');
-  return '"' + newstring + '"'
+  if (double_quotes) {
+    return '"' + newstring + '"'
+  } 
+
+  return newstring
+ 
 }
 
 
@@ -1165,9 +1214,11 @@ async checkRules() {
 }
 
 
-get_help_string(key:keyof typeof constants): string {
-  if(constants[key]) {
-    return constants[key]
+get_help_string(key: string) {
+  const t_new_key = key.replace(':', '_').replace('.','_') as keyof typeof constants;
+  console.log(t_new_key)
+  if(constants[t_new_key]) {
+    return constants[t_new_key]
   }
   return ""
 }
@@ -1184,6 +1235,26 @@ toggleHelp(field: string): void {
   }
 }
 
+showNegationCheckBox(field: string): boolean {
+    if(this.jsonData_keyword[field].hasOwnProperty("show_negate_option")) {
+      if(this.jsonData_keyword[field]["show_negate_option"]) {
+        return true
+      } else {
+        return false
+      }
+    } 
+  return true
+}
 
+isValueRequiredInDoubleQuotes(field: string): boolean {
+  if(this.jsonData_keyword[field].hasOwnProperty("value_in_double_quotes")) {
+    if(this.jsonData_keyword[field]["value_in_double_quotes"]) {
+      return true
+    } else {
+      return false
+    }
+  } 
+return true
+}
 
 }

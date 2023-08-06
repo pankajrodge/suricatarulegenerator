@@ -1,0 +1,27 @@
+{
+    "common": {
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
+    },
+    "content": {
+        "supported_options": ["nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
+        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace", 
+        "fast_pattern", "fast_pattern:only", "flowbits", "flowint", "stream_size"],
+        "form_control_name": "content_modifier"
+    },
+    "tcp_parameters": {
+        "supported_options": ["seq", "ack"],
+        "supported_options_table_headers":["TCP Option", "Select Options", "Add Content Modifier", "Description"],
+        "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+        "content_filter_table_headers":["TCP Option", "Content Value", "Content Modifier", "Content Condition", "Negate Content"],
+        "form_control_name": "tcp_options"
+    },
+
+    "meta_keyword":{
+        "supported_options": ["gid", "classtype"],
+        "supported_options_table_headers":["Select Meta Keyword", "Specify value / Select Options", "Add"],
+        "content_filter_table_headers":["Meta Keyword", "Value"],
+        "form_control_name": "meta_keyword"
+    }
+}
+
+

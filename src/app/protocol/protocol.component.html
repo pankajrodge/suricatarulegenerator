@@ -265,7 +265,7 @@
 
                                 <td *ngIf="httpNgModelSelectDict[http_options] && this.jsonData_keyword[httpNgModelSelectDict[http_options]]['html_tag_type'] == 'text'">
                                     <input [(ngModel)]="globalHttpDict[http_options][httpNgModelSelectDict[http_options]]" [ngModelOptions]="{standalone: true}" type="text">
-                                    <ng-container *ngIf="http_options != 'meta_keyword'">
+                                    <ng-container *ngIf="http_options != 'meta_keyword' && this.showNegationCheckBox(httpNgModelSelectDict[http_options])">
                                         <input  [(ngModel)]="globalHttpDict[http_options].negate_match" [ngModelOptions]="{standalone: true}" type="checkbox" 
                                         (change)="negate_http_content($event, http_options)"> Negate the Match
                                     </ng-container>
@@ -274,7 +274,7 @@
                                     <select [(ngModel)]="globalHttpDict[http_options][httpNgModelSelectDict[http_options]]" [ngModelOptions]="{standalone: true}">
                                         <option *ngFor="let k of jsonData_keyword[httpNgModelSelectDict[http_options]]['drop_down_list']" id="{{k}}" value="{{k}}"> {{k}} </option>
                                     </select>
-                                    <ng-container *ngIf="http_options != 'meta_keyword'">
+                                    <ng-container *ngIf="http_options != 'meta_keyword' && this.showNegationCheckBox(httpNgModelSelectDict[http_options])">
                                         <input  [(ngModel)]="globalHttpDict[http_options].negate_match" [ngModelOptions]="{standalone: true}" type="checkbox" 
                                         (change)="negate_http_content($event, http_options)"> Negate the Match
                                     </ng-container>
@@ -459,4 +459,3 @@
     <button class="button-marging" type="submit" (ngSubmit)="onSubmit()">Submit</button>
     </div>
     </form>
-

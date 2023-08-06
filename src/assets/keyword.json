@@ -489,6 +489,18 @@
     },
     "filestore": {
         "html_tag_type": "text"
+    },
+    "seq": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": false
+    },
+    "ack": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": false
     }
 
 }
