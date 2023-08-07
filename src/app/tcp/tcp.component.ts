@@ -869,11 +869,27 @@ processDataDict() {
           temp_dict[http_options][supp_option] ={}
         } 
 
-        if(! temp_dict[http_options][supp_option][content_match]) {
-          temp_dict[http_options][supp_option][content_match] ={}
-          temp_dict[http_options][supp_option][content_match]["dict"] ={}
-          temp_dict[http_options][supp_option][content_match]["rows"] = []
+        if(typeof content_match === 'object') {
+  
+          if(this.jsonData_keyword[supp_option]["html_tag_type"] === 'text') {
+            let content_match_ntxt = content_match['text']
+            if(! temp_dict[http_options][supp_option][content_match_ntxt]) {
+              temp_dict[http_options][supp_option][content_match_ntxt] ={}
+              temp_dict[http_options][supp_option][content_match_ntxt]["dict"] ={}
+              temp_dict[http_options][supp_option][content_match_ntxt]["rows"] = []
+            }
+           
+          }
+        } else if(typeof content_match === 'string') {
+          if(! temp_dict[http_options][supp_option][content_match]) {
+            temp_dict[http_options][supp_option][content_match] ={}
+            temp_dict[http_options][supp_option][content_match]["dict"] ={}
+            temp_dict[http_options][supp_option][content_match]["rows"] = []
+          }
         }
+
+
+
 
         if (typeof content_match === 'string') { 
           if(this.isValueRequiredInDoubleQuotes(supp_option)) { 
@@ -910,6 +926,13 @@ processDataDict() {
               }
               
             }
+          } else if(this.jsonData_keyword[supp_option]["html_tag_type"] === "text") {
+            if(this.isValueRequiredInDoubleQuotes(supp_option)) { 
+              new_normalized_string = this.normalizeTheContentString(content_match['text'], true)
+            } else {
+              new_normalized_string = this.normalizeTheContentString(content_match['text'], false)
+            }
+
           } else {
             if(content_match["selected"] === 'range') {
               let min = content_match["text"].split('-')[0]
@@ -928,8 +951,23 @@ processDataDict() {
 
         if(content_modifier === undefined && content_modifier_value === undefined) {
           if(this.jsonData_keyword[supp_option]["no_content"]) {
+
+            if(typeof content_match === 'object') {
+  
+              if(this.jsonData_keyword[supp_option]["html_tag_type"] === 'text') {
+                let content_match_ntxt = content_match['text']
+                  
+                temp_dict[http_options][supp_option][content_match_ntxt]["dict"][supp_option] = negate_char + new_normalized_string
+                temp_dict[http_options][supp_option][content_match_ntxt]["rows"].push(supp_option+ ':' + negate_char + new_normalized_string)
+              }
+            } else if(typeof content_match === 'string') {
+
             temp_dict[http_options][supp_option][content_match]["dict"][supp_option] = negate_char + new_normalized_string
             temp_dict[http_options][supp_option][content_match]["rows"].push(supp_option+ ':' + negate_char + new_normalized_string)
+            }
+
+
+
           
           } else {
             if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
@@ -1049,8 +1087,16 @@ generate_rule_format(temp_dict:any) {
               }
             }
             
-            console.log(supp_option + ":" + content_match)
-            temp_data_dict[form_control_name].push(supp_option + ':' + content_match)
+            if(typeof content_match === 'object') {
+              if(this.jsonData_keyword[supp_option]["html_tag_type"] === 'text') {
+                console.log(supp_option + ":" + content_match['text'])
+                temp_data_dict[form_control_name].push(supp_option + ':' + content_match['text'])
+              }
+            } else if(typeof content_match === 'string') {
+              console.log(supp_option + ":" + content_match)
+              temp_data_dict[form_control_name].push(supp_option + ':' + content_match)
+            }
+
             
           } else {
             let form_control_name = http_options

@@ -9,7 +9,7 @@
         "form_control_name": "content_modifier"
     },
     "tcp_parameters": {
-        "supported_options": ["seq", "ack"],
+        "supported_options": ["seq", "ack", "window", "tcp.mss"],
         "supported_options_table_headers":["TCP Option", "Select Options", "Add Content Modifier", "Description"],
         "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
         "content_filter_table_headers":["TCP Option", "Content Value", "Content Modifier", "Content Condition", "Negate Content"],

@@ -14,7 +14,9 @@
     "gid": {
         "html_tag_type": "text",
         "key_value_separator": ":",
-        "meta_keyword": true
+        "meta_keyword": true,
+        "value_in_double_quotes": false,
+        "no_content": true
     },
     "classtype": {
         "html_tag_type": "drop_down",
@@ -217,7 +219,7 @@
         "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
     },
     "urilen": {
-        "html_tag_type": "drop_down_with_text",
+        "html_tag_type": "dropdown_with_text",
         "drop_down_list": ["=", ">", "<", "range"]
     },    
     "http.protocol": {
@@ -501,6 +503,24 @@
         "no_content": true,
         "value_in_double_quotes": false,
         "show_negate_option": false
+    },
+    "window": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": true
+    },
+    "tcp.mss": {
+        "html_tag_type": "dropdown_with_text",
+        "no_content": true,
+        "order_name": ["selected", "text"],
+        "drop_down_dict": {
+                "=": "", 
+                ">": ">",
+                "<":"<",
+                "range_limit": ""
+
+        }
     }
 
 }
