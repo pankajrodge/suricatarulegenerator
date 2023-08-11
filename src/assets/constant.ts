@@ -1,0 +1,27 @@
+export const valid_attributes = [
+    "lable_descrption",
+    "html_tag_type",
+    "key_value_separator",
+    "value_in_double_quotes",
+    "no_content",
+    "drop_down_dict",
+    "order",
+    "order_name",
+    "value_seperator",
+    "save_user_input_with_prefix_as",
+    "supported_content_modifier",
+    "sticky_buffer",
+    "check_box_list",
+    "mandatory_option",
+    "disable_order_when_condition",
+    "show_negate_option",
+    "is_mandatory"
+]
+
+export const valid_html_tags = [
+    "na",
+    "text",
+    "check_box",
+    "drop_down",
+    "ordered_tag_mandatory_optional"
+]

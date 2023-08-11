@@ -1,0 +1,241 @@
+<form [formGroup]="dynamicForm" (ngSubmit)="onSubmit()">
+    <div class="form-field">
+        <ng-container *ngIf="protocol_json_data">
+            <section>
+                <ng-container *ngIf="protocol_json_data['common']">
+                    <ng-container *ngFor="let d of protocol_json_data['common']['supported_options']">
+                        
+                        <!-- Handling html tag as textbox  -->
+                        <div *ngIf="get_html_tag_type(d)=='text'">
+                            <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
+                            <input type="text" id="{{d}}" name="{{d}}" [formControlName]="d" required>
+                            <button type=button (click)="toggleHelp(d)" class="help-button">
+                                ?
+                            </button> 
+                            <div *ngIf="common_field_help_and_error_message[d]['showHelpMessage']" class="help-message">
+                                <p [innerHTML]="get_help_string(d)"></p>
+                                <button type=button (click)="toggleHelp('all')" class="help-button">Close</button>
+                            </div>
+                            <label *ngIf="common_field_help_and_error_message[d].showErrorMessage" class="label-error-mesage">{{common_field_help_and_error_message[d].errorMessage}}</label>
+                            <br><br>
+                        </div>
+                        <!-- End of Handling html tag as textbox  -->
+
+                        <!-- Handling html tag as dropdown  -->
+                        <div *ngIf="get_html_tag_type(d)=='drop_down'">
+                            <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
+                            <select [formControlName]="d">
+                               <option *ngFor="let k of get_drop_down_dict(d) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
+                           </select>
+    
+                           <button type=button (click)="toggleHelp(d)" class="help-button">
+                            ?
+                            </button> 
+                             <div *ngIf="common_field_help_and_error_message[d]['showHelpMessage']" class="help-message">
+                                <p [innerHTML]="get_help_string(d)"></p>
+                                <button type=button (click)="toggleHelp('all')" class="help-button">Close</button>
+                             </div>
+    
+                           <label *ngIf="common_field_help_and_error_message[d].showErrorMessage" class="label-error-mesage">{{common_field_help_and_error_message[d].errorMessage}}</label>
+                            <br><br>
+                        </div>
+                         <!-- End of Handling html tag as dropdown  -->
+
+                        <!-- Handling html tag as checkbox_list  -->
+                         <ng-container *ngIf="get_html_tag_type(d) === 'check_box_list'">
+                            <div>
+                                <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
+                            <ng-container *ngFor="let l of json_keyword[d].check_box_list">
+                                <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="handleCheckboxChange($event, d)">
+                                <label for="{{l}}"> {{l}}</label>
+                                <label *ngIf="common_field_help_and_error_message[d].showErrorMessage" class="label-error-mesage">{{common_field_help_and_error_message[d].errorMessage}}</label>
+                            </ng-container>
+                            <button type=button (click)="toggleHelp(d)" class="help-button">
+                                ?
+                            </button> 
+                            <div *ngIf="common_field_help_and_error_message[d]['showHelpMessage']" class="help-message">
+                                <p [innerHTML]="get_help_string(d)"></p>
+                                <button type=button (click)="toggleHelp('all')" class="help-button">Close</button>
+                            </div>
+                        </div>
+                        <br>
+                        </ng-container>
+                        <!-- End of Handling html tag as checkbox_list  -->
+
+                        <!-- Handling html tag as checkbox  -->
+                        <div *ngIf="get_html_tag_type(d)=='check_box'">
+                            <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
+                            <input  type="checkbox" name="{{d}}" value="{{d}}" (change)="handleCheckboxChange($event, d)">
+                            <br><br>
+                        </div>
+                        <!-- End of Handling html tag as checkbox  -->
+
+                        <!-- Handling html tag as ordered_tag_mandatory_optional  -->
+                        <div *ngIf="get_html_tag_type(d)=='ordered_tag_mandatory_optional'">
+                            <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
+                            <ng-container formGroupName="{{d}}">
+                                <table class="auto-width-table">
+                                    <tr class="auto-tr">
+                                        <ng-container *ngFor="let oName of get_order_name_list(d)">
+                                            <ng-container *ngIf="get_order_name_html_type(d, oName) == 'text'">
+                                                <td class=".auto-td">
+                                                    <label for={{oName}}>{{oName}} : </label>
+                                                          <!-- Your controls within the nestedFormGroup -->
+                                                          <input type="text" formControlName="{{oName}}">
+                                                    <br>
+                                                </td>
+                                            </ng-container>
+    
+                                            <ng-container *ngIf="get_order_name_html_type(d, oName) == 'drop_down'">
+                                                <td class=".auto-td">
+                                                    <label for={{oName}}>{{oName}} : </label>
+                                                    <select formControlName="{{oName}}">
+                                                        <option *ngFor="let k of get_drop_down_dict_for_order(d, oName) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
+                                                    </select>
+                                                    <br>
+                                                </td>
+                                            </ng-container>
+    
+                                        </ng-container>
+                                    </tr>
+                                </table>
+                            </ng-container>
+
+                        </div>
+                        <!-- Handling html tag as ordered_tag_mandatory_optional  -->
+
+                    </ng-container>
+                </ng-container>
+            </section>
+
+            <!-- Content Part Handling 
+            content_match_text_box, content_dict.content_modifier_negate, content_dict.content_modifier_selected
+            -->
+            <section>
+                <ng-container *ngIf="protocol_json_data['content']">
+                    <br><br>
+                    <ng-container *ngIf="protocol_json_data['content']['supported_options']">
+                        <label for="content_match">Add Content Match Criteria : </label>
+                        <button [disabled]="disabledContentMatchButton" type="button" (click)="addContentMatch()">Add Content Match</button>
+                        <label *ngIf="content_modifier_showErrorMessage" class="label-error-mesage">{{content_modifier_error_message}}</label> 
+                        <br><br>
+                        <div *ngIf="showContentMatchTextBox">
+                            <label *ngIf="showContentMatchTable" for="content_match_text">Specify Content string : </label>
+                            <input  *ngIf="showContentMatchTable" [(ngModel)]="content_match_text_box" [ngModelOptions]="{standalone: true}" type="text">
+                            <input  *ngIf="showContentMatchTable" [(ngModel)]="content_dict.content_modifier_negate" [ngModelOptions]="{standalone: true}" type="checkbox" name="negate" 
+                            (change)="negateContentModifierContent($event)">
+                            <label *ngIf="showContentMatchTable">Negate the Match </label>
+                            <br><br>
+                            <table *ngIf="showContentMatchTable">
+                                <thead>
+                                    <tr>
+                                        <th>Match Criteria</th>
+                                        <th>Value</th>
+                                        <th>Add Another</th>
+                                        <th>Description</th>
+                                      </tr>
+                                </thead>
+                                <tr>
+                                    <td>
+                                        <select [(ngModel)]="content_dict.content_modifier_selected" [ngModelOptions]="{standalone: true}" >
+                                            <option *ngFor="let k of get_content_modifier()" id="{{k}}" value="{{k}}"> {{k}} </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <ng-container *ngIf="content_dict.content_modifier_selected">
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected) == 'text'">
+                                                <input [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected]" [ngModelOptions]="{standalone: true}"type="text">
+                                            </ng-container>
+
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'na'">
+                                                <label>Not Applicable</label>
+                                            </ng-container>
+
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'check_box'">
+                                                <input  type="checkbox" name="{{content_dict.content_modifier_selected}}" value="{{content_dict.content_modifier_selected}}"
+                                                 (change)="object_check_box_change($event, content_dict.content_modifier_selected)">
+                                            </ng-container>
+
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'check_box_list'">
+                                                <ng-container *ngFor="let l of json_keyword[content_dict.content_modifier_selected].check_box_list">
+                                                    <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="object_check_box_change($event, content_dict.content_modifier_selected)">
+                                                    <label for="{{l}}"> {{l}}</label>
+
+                                                </ng-container>
+                                            </ng-container>
+
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'drop_down'">
+                                                <select [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected]" [ngModelOptions]="{standalone: true}">
+                                                    <option *ngFor="let k of get_drop_down_dict(content_dict.content_modifier_selected) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
+                                                </select>
+                                            </ng-container>
+
+                                            <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'ordered_tag_mandatory_optional'">
+                                                <ng-container *ngFor="let oName of get_order_name_list(content_dict.content_modifier_selected)">
+                                                    <ng-container *ngIf="get_order_name_html_type(content_dict.content_modifier_selected, oName) == 'text'">
+                                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                                        <input [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected][oName]" [ngModelOptions]="{standalone: true}" type="text">
+                                                        <br>
+                                                    </ng-container>
+
+                                                    <ng-container *ngIf="get_order_name_html_type(content_dict.content_modifier_selected, oName) == 'check_box'">
+                                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                                        <input  type="checkbox" name="{{oName}}" value="{{oName}}"
+                                                         (change)="object_check_box_change($event, content_dict.content_modifier_selected, oName)">
+                                                        <br>
+                                                    </ng-container>
+
+        
+                                                    <ng-container *ngIf="get_order_name_html_type(content_dict.content_modifier_selected, oName) =='check_box_list'">
+                                                        <ng-container *ngFor="let l of json_keyword[content_dict.content_modifier_selected][oName].check_box_list">
+                                                            <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="object_check_box_change($event, content_dict.content_modifier_selected, oName)">
+                                                            <label for="{{l}}"> {{l}}</label>
+                                                        </ng-container>
+                                                    </ng-container>
+
+                                                    <ng-container *ngIf="get_order_name_html_type(content_dict.content_modifier_selected, oName) == 'drop_down'">
+                                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                                        <select [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected][oName]" [ngModelOptions]="{standalone: true}">
+                                                            <option *ngFor="let k of get_drop_down_dict_for_order(content_dict.content_modifier_selected, oName) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
+                                                        </select>
+                                                        <br>
+                                                    </ng-container>
+
+                                                </ng-container>
+
+                                            </ng-container>
+
+                                        </ng-container>
+                                    </td>
+                                    <td>
+                                        <button type="button" (click)="add_content_modifier(content_match_text_box, content_dict.content_modifier_negate, undefined)" >Add Without Content Mofier</button>
+                                        <ng-container *ngIf="content_dict.content_modifier_selected">
+                                            <button type="button" (click)="add_content_modifier(content_match_text_box, content_dict.content_modifier_negate, content_dict.content_modifier_selected)" >Add Content Mofier</button>
+                                            
+                                        </ng-container>
+                                    </td>
+                                    <td>
+                                        <ng-container *ngIf="content_dict.content_modifier_selected">
+                                            <button type=button (click)="toggleHelp(content_dict.content_modifier_selected)" class="help-button">
+                                                Show Help
+                                            </button> 
+                                            
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                    </ng-container>
+
+                </ng-container>
+                
+            </section>
+            <!-- Content END HERE Part Handling -->
+
+        </ng-container>
+    
+        <br>
+        <button class="button-marging" type="submit" (ngSubmit)="onSubmit()">Submit</button>
+    </div>
+</form>
