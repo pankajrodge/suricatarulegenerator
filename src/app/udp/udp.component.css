@@ -37,6 +37,8 @@ table {
     border: 1px solid black;
     padding: 8px;
     width: 200px;
+    word-wrap: break-word;
+    white-space: normal;
     
   }
 

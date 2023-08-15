@@ -8,7 +8,10 @@
     "flow_direction": {   
         "lable_descrption": "Flow Direction",
         "html_tag_type": "drop_down",
-        "drop_down_list": ["single", "both"],
+        "drop_down_dict": {
+            "single": "->",
+            "both": "<>"
+        },
         "is_mandatory": true
     },
     "gid": {
@@ -20,8 +23,12 @@
     },
     "classtype": {
         "html_tag_type": "drop_down",
-        "drop_down_list": ["web-application-attack", "not-suspicious", "bad-unknown", "misc-activity"],
-        "meta_keyword": true
+        "drop_down_dict": {
+            "web-application-attack": "web-application-attack", 
+            "not-suspicious": "not-suspicious", 
+            "bad-unknown": "bad-unknown", 
+            "misc-activity": "misc-activity"
+        }
     },
     "bypass": {
         "html_tag_type": "na"
@@ -70,7 +77,12 @@
 
     "bsize": {
         "html_tag_type": "dropdown_with_text",
-        "drop_down_list": ["=", ">", "<", "range"]
+        "drop_down_dict": {
+            "=":"", 
+            ">": ">", 
+            "<": "<", 
+            "range": "range"
+        }
     },
     "dsize": {
         "html_tag_type": "dropdown_with_text",
@@ -86,7 +98,7 @@
     },
 
     "byte_test": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "order": ["text", "drop_down", "text", "text", "check_box", "drop_down", "drop_down", "check_box", "text"],
         "mandatory_option": ["number_of_bytes*", "operator*", "value*"],
         "order_name": ["number_of_bytes*", "operator*", "value*", "offset", "relative", "endian", "string_representation", "dce", "bitmask"],
@@ -119,7 +131,7 @@
 
 
     "byte_math": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "order": ["text", "text", "drop_down", "text", "text", "check_box", "drop_down", "drop_down", "check_box", "text"],
         "order_name": ["number_of_bytes", "offset", "oper", "rvalue", "result", "relative", "endian", "string_representation", "dce", "bitmask"],
         "value_seperator": ",",
@@ -153,7 +165,7 @@
         }
     },
     "byte_jump": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "value_seperator": ",",
         "order": ["text", "text", "check_box", "text", "drop_down", "drop_down", "check_box", "check_box", "check_box", "text", "check_box", "text"],
         "order_name": ["number_of_bytes", "offset", "relative", "multiplier", "endian", "string_representation", "align", "from_beginning", "from_end", "post_offset", "dce", "bitmask"],
@@ -178,7 +190,7 @@
         }
     },
     "byte_extract": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "value_seperator": ",",
         "order": ["text", "text",  "text", "check_box", "text", "drop_down", "check_box", "drop_down", "text"],
         "order_name": ["number_of_bytes", "offset", "var_name", "relative", "multiplier", "endian", "dce", "string_representation", "align"],
@@ -204,13 +216,23 @@
 
     "http.method": {
         "html_tag_type": "drop_down",
-        "drop_down_list": ["GET", "POST", "PUT", "HEAD", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"],
+        "drop_down_dict": {
+            "GET": "GET", 
+            "POST": "POST",
+            "PUT": "PUT", 
+            "HEAD": "HEAD", 
+            "DELETE": "DELETE",
+            "TRACE": "TRACE", 
+            "OPTIONS": "OPTIONS",
+            "CONNECT": "CONNECT", 
+            "PATCH":  "PATCH"
+        },
         "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
         "sticky_buffer": true
     },
     "http.uri": {
         "html_tag_type": "text",
-        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within", "byte_test", "isdataat", "bsize", "base64_decode"],
+        "supported_content_modifier": ["depth", "byte_test", "flow", "relative", "action", "distance", "offset", "nocase", "within", "byte_test", "isdataat", "bsize", "base64_decode"],
         "sticky_buffer": true
     },
     
@@ -220,11 +242,24 @@
     },
     "urilen": {
         "html_tag_type": "dropdown_with_text",
-        "drop_down_list": ["=", ">", "<", "range"]
+        "drop_down_dict": {
+            "drop_down": {
+                "=": "=", 
+            ">": ">", 
+            "<": "<", 
+            "range": "range"
+            }
+        },
+        "order": ["drop_down", "text"],
+        "order_name": ["drop_down", "text"]
     },    
     "http.protocol": {
         "html_tag_type": "drop_down",
-        "drop_down_list": ["HTTP/1.0", "HTTP/1.1", "HTTP/1.2"],
+        "drop_down_dict": {
+            "HTTP/1.0": "HTTP/1.0",  
+            "HTTP/1.1": "HTTP/1.1", 
+            "HTTP/1.2": "HTTP/1.2"
+        },
         "sticky_buffer": true
     },
     "http.header": {
@@ -368,9 +403,19 @@
         "transformation": true
     },
     "flowbits": {
-        "html_tag_type": "dropdown_with_text",
-        "drop_down_list": ["set","isset","toggle", "unset", "isnotset", "noalert"],
-        "order_name": ["selected", "text"],
+        "html_tag_type": "ordered_tag_mandatory_optional",
+        "drop_down_dict": {
+            "type":{
+            "set": "set",
+            "isset": "isset",
+            "toggle":"toggle", 
+            "unset":"unset", 
+            "isnotset": "isnotset", 
+            "noalert": "noalert"
+            }
+        },
+        "order": ["drop_down", "text"],
+        "order_name": ["type", "value"],
         "key_value_seperator": ",",
         "no_text": ["noalert"]
     },
@@ -385,7 +430,7 @@
 
 
     "flowint": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "order": ["text", "drop_down", "text"],
         "order_name": ["flowinit_name", "operator", "value"],
         "disable_order_when_condition": {
@@ -408,7 +453,7 @@
     },
 
     "stream_size": {
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "order": ["drop_down", "drop_down", "text"],
         "order_name": ["traffic_from", "operator", "value"],
         "drop_down_dict": {
@@ -430,7 +475,7 @@
     },
 
     "base64_decode":{
-        "html_tag_type": "ordered_tag_mandator_optional",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "order": ["text", "text", "check_box", "text"],
         "order_name": ["bytes", "offset", "relative", "content"]
     },
@@ -440,7 +485,8 @@
     "source_ip": {
         "lable_descrption": "Source IP/Network",
         "html_tag_type": "text",
-        "is_mandatory": true
+        "is_mandatory": true,
+        "default_value": "any"
     },
     "source_port": {
         "lable_descrption": "Source Ports",
@@ -473,7 +519,15 @@
     },
     "action": {
         "html_tag_type": "drop_down",
-        "drop_down_list": ["alert", "pass", "drop", "reject", "rejectsrc", "rejectdst", "rejectboth"],
+        "drop_down_dict": {
+            "alert":"alert",
+            "pass": "pass", 
+            "drop": "drop", 
+            "reject": "reject", 
+            "rejectsrc": "rejectsrc",
+            "rejectdst": "rejectdst", 
+            "rejectboth": "rejectboth"
+        },
         "lable_descrption": "Action",
         "is_mandatory": true
     },
@@ -513,6 +567,7 @@
     "tcp.mss": {
         "html_tag_type": "dropdown_with_text",
         "no_content": true,
+        "value_in_double_quotes": false,
         "order_name": ["selected", "text"],
         "drop_down_dict": {
                 "=": "", 
@@ -521,6 +576,16 @@
                 "range_limit": ""
 
         }
+    },
+    "tcp.hdr": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["offset", "byte_test"],
+        "sticky_buffer": true
+    },
+
+    "relative":{
+        "html_tag_type": "check_box",
+        "lable_descrption": "Relative"
     }
 
 }
