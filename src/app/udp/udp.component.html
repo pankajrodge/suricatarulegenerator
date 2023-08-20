@@ -9,7 +9,7 @@
                         <!-- Handling html tag as textbox  -->
                         <div *ngIf="get_html_tag_type(d)=='text'">
                             <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
-                            <input type="text" id="{{d}}" name="{{d}}" [formControlName]="d">
+                            <input [(ngModel)]="common_object_dict[d]" [ngModelOptions]="{standalone: true}" type="text" id="{{d}}" name="{{d}}">
                             <button type=button (click)="toggleHelp(d)" class="help-button">
                                 ?
                             </button> 
@@ -25,7 +25,7 @@
                         <!-- Handling html tag as dropdown  -->
                         <div *ngIf="get_html_tag_type(d)=='drop_down'">
                             <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
-                            <select [formControlName]="d">
+                            <select [(ngModel)]="common_object_dict[d]" [ngModelOptions]="{standalone: true}">
                                <option *ngFor="let k of get_drop_down_dict(d) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
                            </select>
     
@@ -47,10 +47,11 @@
                             <div>
                                 <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
                             <ng-container *ngFor="let l of json_keyword[d].check_box_list">
-                                <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="handleCheckboxChange($event, d)">
+                                <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="object_check_box_change_for_common_field($event, d)">
                                 <label for="{{l}}"> {{l}}</label>
-                                <label *ngIf="common_field_help_and_error_message[d].showErrorMessage" class="label-error-mesage">{{common_field_help_and_error_message[d].errorMessage}}</label>
+    
                             </ng-container>
+                            <label *ngIf="common_field_help_and_error_message[d].showErrorMessage" class="label-error-mesage">{{common_field_help_and_error_message[d].errorMessage}}</label>
                             <button type=button (click)="toggleHelp(d)" class="help-button">
                                 ?
                             </button> 
@@ -66,7 +67,7 @@
                         <!-- Handling html tag as checkbox  -->
                         <div *ngIf="get_html_tag_type(d)=='check_box'">
                             <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
-                            <input  type="checkbox" name="{{d}}" value="{{d}}" (change)="handleCheckboxChange($event, d)">
+                            <input  type="checkbox" name="{{d}}" value="{{d}}" (change)="object_check_box_change_for_common_field($event, d)">
                             <br><br>
                         </div>
                         <!-- End of Handling html tag as checkbox  -->
@@ -74,33 +75,43 @@
                         <!-- Handling html tag as ordered_tag_mandatory_optional  -->
                         <div *ngIf="get_html_tag_type(d)=='ordered_tag_mandatory_optional'">
                             <label for="{{get_lable_description(d)}}" class="fixed-width-label" >{{get_lable_description(d)}} : </label>
-                            <ng-container formGroupName="{{d}}">
-                                <table class="auto-width-table">
-                                    <tr class="auto-tr">
-                                        <ng-container *ngFor="let oName of get_order_name_list(d)">
-                                            <ng-container *ngIf="get_order_name_html_type(d, oName) == 'text'">
-                                                <td class=".auto-td">
-                                                    <label for={{oName}}>{{oName}} : </label>
-                                                          <!-- Your controls within the nestedFormGroup -->
-                                                          <input type="text" formControlName="{{oName}}">
-                                                    <br>
-                                                </td>
-                                            </ng-container>
-    
-                                            <ng-container *ngIf="get_order_name_html_type(d, oName) == 'drop_down'">
-                                                <td class=".auto-td">
-                                                    <label for={{oName}}>{{oName}} : </label>
-                                                    <select formControlName="{{oName}}">
-                                                        <option *ngFor="let k of get_drop_down_dict_for_order(d, oName) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
-                                                    </select>
-                                                    <br>
-                                                </td>
-                                            </ng-container>
-    
+                                <table>
+                                    <tr>
+                                        <td>
+                                <ng-container *ngFor="let oName of get_order_name_list(d)">
+                                    <ng-container *ngIf="get_order_name_html_type(d, oName) == 'text'">
+                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                        <input [(ngModel)]="common_object_dict[d][oName]" [ngModelOptions]="{standalone: true}" type="text">
+                                        <br>
+                                    </ng-container>
+
+                                    <ng-container *ngIf="get_order_name_html_type(d, oName) == 'check_box'">
+                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                        <input  type="checkbox" name="{{oName}}" value="{{oName}}"
+                                         (change)="object_check_box_change_for_common_field($event, d, oName)">
+                                        <br>
+                                    </ng-container>
+
+
+                                    <ng-container *ngIf="get_order_name_html_type(d, oName) =='check_box_list'">
+                                        <ng-container *ngFor="let l of json_keyword[d][oName].check_box_list">
+                                            <input  type="checkbox" name="{{l}}" value="{{l}}" (change)="object_check_box_change_for_common_field($event, d, oName)">
+                                            <label for="{{l}}"> {{l}}</label>
                                         </ng-container>
-                                    </tr>
-                                </table>
-                            </ng-container>
+                                    </ng-container>
+
+                                    <ng-container *ngIf="get_order_name_html_type(d, oName) == 'drop_down'">
+                                        <label for={{oName}} class="fixed-width-content-label">{{oName}} : </label>
+                                        <select [(ngModel)]="common_object_dict[d][oName]" [ngModelOptions]="{standalone: true}">
+                                            <option *ngFor="let k of get_drop_down_dict_for_order(d, oName) | keyvalue " id="{{k.key}}" value="{{k.value}}"> {{k.key}} </option>
+                                        </select>
+                                        <br>
+                                    </ng-container>
+
+                                </ng-container>
+                            </td>
+                            </tr>
+                            </table>
 
                         </div>
                         <!-- Handling html tag as ordered_tag_mandatory_optional  -->
@@ -145,7 +156,7 @@
                                     <td>
                                         <ng-container *ngIf="content_dict.content_modifier_selected">
                                             <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected) == 'text'">
-                                                <input [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected]" [ngModelOptions]="{standalone: true}"type="text">
+                                                <input [(ngModel)]="content_modifier_object[content_dict.content_modifier_selected]" [ngModelOptions]="{standalone: true}" type="text">
                                             </ng-container>
 
                                             <ng-container *ngIf="get_html_tag_type(content_dict.content_modifier_selected)== 'na'">
@@ -267,7 +278,13 @@
                 <ng-container *ngFor="let proto_param of get_protocol_detail_list()">
                     <label for="{{proto_param}}" class="fixed-width-content-label">{{proto_param.toUpperCase()}} : </label>
                     <button type="button" (click)="show_protocol_content_user_selection_table(proto_param)">ADD {{proto_param.toUpperCase()}}</button>
-                    <label *ngIf="display_protocol_error_message(proto_param)" class="label-error-mesage">{{protocol_error_message(proto_param)}}</label>
+                    <ng-container *ngIf="display_protocol_error_message(proto_param)"> 
+                        <label  class="label-error-mesage">{{protocol_error_message(proto_param)}}</label>
+                    </ng-container>
+                    <ng-container *ngIf="display_protocol_modifier_error_message(proto_param)"> 
+                        <label  class="label-error-mesage">{{get_protocol_modifier_error_message(proto_param)}}</label>
+                    </ng-container>
+                   
                     <br><br>
                     <table *ngIf="display_protocol_content_user_selection_table(proto_param)">
                         <thead>
@@ -358,7 +375,7 @@
                                 <!-- <button type="button" (click)="add_user_selected_protocol_details(proto_param, protocol_content_dict[proto_param]['selected'], undefined, protocol_content_dict[proto_param]['negate'])"> Add Without Content Modifier </button> -->
                                 <button type="button" (click)="add_user_selected_protocol_details(proto_param)"> Add Without Content Modifier </button>
                                 <ng-container *ngIf="display_protocol_add_content_modifier_button(protocol_content_dict[proto_param]['selected'])">
-                                    <button (click)="show_protocol_content_modifier_table(proto_param)">Add Content Modifier</button>
+                                    <button type="button" (click)="show_protocol_content_modifier_table(proto_param)">Add Content Modifier</button>
                                 </ng-container>
                              </td>
 
@@ -499,7 +516,7 @@
                                 
                             </table>
                         </div>
-                        
+                        <br>
                 </ng-container>
             </section>
 
@@ -616,25 +633,24 @@
                         </div>
 
                     </ng-container>
-                    <!-- 
+                 
                     <div *ngIf="show_user_selected_meta_keyword_table()">
                         <br>
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Match Content</th>
-                                    <th>Negate the Match</th>
-                                    <th>Content Modifier</th>
+                                    <ng-container *ngFor="let m of get_user_selection_table_headers_for_meta_keyword()">
+                                        <th>{{m}}</th>
+                                    </ng-container>
                                     <th>Remove</th>
                                 </tr>
                             </thead>
                                 
-                                    <ng-container *ngFor="let k of user_selected_content_modifier['display']; let i=index">
+                                    <ng-container *ngFor="let k of get_user_selected_meta_keyword(); let i=index">
                                         <tr>
                                         <td>{{k[0]}}</td>
                                         <td>{{k[1]}}</td>
-                                        <td>{{k[2]}}</td>
-                                        <td><button type="button" (click)="removeFromDataDict(i)">Remove</button></td>
+                                        <td><button type="button" (click)="remove_user_selected_metakeyword(i)">Remove</button></td>
                                         </tr>
                                     </ng-container>
                                 
@@ -642,7 +658,7 @@
                         </table>
                     </div>
 
-                    -->
+           
 
                 </ng-container>
                 

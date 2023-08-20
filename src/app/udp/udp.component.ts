@@ -59,6 +59,9 @@ export class UdpComponent implements OnInit {
   public content_modifier_object:any = {}
 
 
+  public common_object_dict:any = {}
+
+
   public protocol_content_dict:any = {}
   public protocol_content_modifier_dict:any = {}
   public protocol_content_object_dict:any = {}
@@ -153,19 +156,52 @@ export class UdpComponent implements OnInit {
       this.protocol_json_data = data4
 
       // for content modifier
-      this.createFormControlForCommonField()
+      //this.createFormControlForCommonField()
+      this.populate_common_object()
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
       this.populate_content_modifier_object()
+
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
       this.generateErrorMeesageDictForCommonField()
+
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
 
       //for protocol content
       this.prepare_protocol_content_dict() 
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
       this.prepare_protocol_content_modifier_dict()
+
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
 
       //for protocol
       this.populate_protocol_object_dict()
+
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
       this.populate_user_selected_protocol_details_dict()
 
+      setTimeout(() => {
+        this.formVisible = true; // Display the form after the delay
+      }, 1000)
+
       this.populate_meta_keyword_object_dict()
+
       this.populate_user_selected_meta_keyword()
     });
 
@@ -209,6 +245,7 @@ export class UdpComponent implements OnInit {
 
   }
 
+
   populate_meta_keyword_object_dict() {
     if (this.protocol_json_data["meta_keyword"]['supported_options']) {
       for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
@@ -238,6 +275,9 @@ export class UdpComponent implements OnInit {
             }
             if(this.get_order_name_html_type(field, oName) == 'check_box') {
               this.meta_keyword_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.meta_keyword_object_dict[field][oName] = []
             }
           }
           
@@ -275,6 +315,50 @@ export class UdpComponent implements OnInit {
             }
             if(this.get_order_name_html_type(field, oName) == 'check_box') {
               this.content_modifier_object[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.content_modifier_object[field][oName] = []
+            }
+          }
+          
+        }
+      }
+    }
+  }
+
+
+  populate_common_object() {
+    if (this.protocol_json_data["common"]['supported_options']) {
+      for (let field of this.protocol_json_data["common"]['supported_options']) {
+        if(this.get_html_tag_type(field) == 'text') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'na') {
+          this.common_object_dict[field]= undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box_list') {
+          this.common_object_dict[field] = []
+        }
+        if(this.get_html_tag_type(field) == 'drop_down') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'ordered_tag_mandatory_optional') {
+          this.common_object_dict[field]={}
+          for(let oName of this.get_order_name_list(field)) {
+            if(this.get_order_name_html_type(field, oName) == 'text') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'drop_down') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.common_object_dict[field][oName] = []
             }
           }
           
@@ -330,6 +414,9 @@ export class UdpComponent implements OnInit {
             if(this.get_order_name_html_type(supp_option, oName) == 'check_box') {
               this.protocol_content_object_dict[proto_param][supp_option][oName] = undefined
             }
+            if(this.get_order_name_html_type(supp_option, oName) == 'check_box_list') {
+              this.protocol_content_object_dict[proto_param][supp_option][oName] = []
+            }
           }
         }
         
@@ -362,6 +449,9 @@ export class UdpComponent implements OnInit {
                   }
                   if(this.get_order_name_html_type(supp_cont_mod, oName) == 'check_box') {
                     this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = undefined
+                  }
+                  if(this.get_order_name_html_type(supp_cont_mod, oName) == 'check_box_list') {
+                    this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = []
                   }
                 }
               }
@@ -428,12 +518,26 @@ export class UdpComponent implements OnInit {
 
 
   onSubmit() {
+    /*
+    this.generateErrorMeesageDictForCommonField()
+    if(this.dynamicForm.contains("common_field")) {
+      this.dynamicForm.removeControl("common_field")
+    }
+    this.dynamicForm.addControl('common_field', this.formBuilder.control(this.common_object_dict))
+    */
+    
+    if(!this.validate_common_part()) {
+      console.log("input correct")
+      if(this.dynamicForm.contains("common_field")) {
+        this.dynamicForm.removeControl("common_field")
+      }
+      this.dynamicForm.addControl('common_field', this.formBuilder.control(this.common_object_dict))
+    } else {
+      console.log("input incorrect")
+    }
+
     console.log(this.dynamicForm.value)
-/*
-    console.log(this.protocol_content_dict)
-    console.log(this.protocol_content_object_dict)
-    console.log(this.protocol_content_modifier_dict)
-*/
+
   }
 
   generateErrorMeesageDictForCommonField() {
@@ -529,6 +633,36 @@ object_check_box_change(event:any, field:any, oName:string = '') {
     }
   }
 }
+
+object_check_box_change_for_common_field(event:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.common_object_dict[field] = event.target.checked
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.common_object_dict[field].push(event.target.value);
+      } else {
+        let index = this.common_object_dict[field].indexOf(event.target.value)
+        this.common_object_dict[field].splice(index, 1);
+      }
+    }
+  } else {
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.common_object_dict[field][oName] = event.target.checked
+    } 
+
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.common_object_dict[field][oName].push(event.target.value);
+      } else {
+        let index = this.common_object_dict[field][oName].indexOf(event.target.value)
+        this.common_object_dict[field][oName].splice(index, 1);
+      }
+    }
+  }
+}
+
 
 object_check_box_change_for_metakeyword(event:any, field:any, oName:string = '') {
   if(oName === '' || oName === undefined){
@@ -682,9 +816,11 @@ get_drop_down_dict_for_order(field:string, order_name:string):any {
 }
 
 get_drop_down_dict(field:string):any {
+  
   if(this.json_keyword[field]["drop_down_dict"]) {
     return this.json_keyword[field]["drop_down_dict"]
   } else {
+    console.log("missing drop down dict for " + field)
     throw new Error("Drop down dict is not defined for order_name : " + field);
   }
 }
@@ -730,13 +866,23 @@ clear_content_match_dict() {
 }
 
 add_content_modifier(content_string:any, negate:any, content_modifier:any) {
-
+  this.content_modifier_showErrorMessage = false
+  this.content_modifier_error_message = ""
   if(content_string === '' || content_string === undefined) {
     this.content_modifier_showErrorMessage = true
+    this.content_modifier_error_message = "** Please specify the content string"
     return
   } else {
     this.content_modifier_showErrorMessage = false
   }
+
+  if(content_modifier !== undefined) {
+    if(this.validate_content_modifier(content_modifier)) {
+      this.content_modifier_showErrorMessage = true
+      return
+    }
+  }
+
 
   if(content_modifier !== undefined || content_modifier != '') {
     this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, this.content_modifier_object[content_modifier]])
@@ -756,6 +902,149 @@ add_content_modifier(content_string:any, negate:any, content_modifier:any) {
   }
 
 }
+
+validate_content_modifier(content_modifier:string):boolean {
+  let temp_error_message:string = ''
+  if(!this.json_keyword[content_modifier].hasOwnProperty("is_mandatory") && !this.json_keyword[content_modifier].hasOwnProperty("mandatory_option")) {
+    if(this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
+    }
+    if(this.get_object_type(this.content_modifier_object[content_modifier]) === 'array'){
+      if(this.content_modifier_object[content_modifier].length === 0) {
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
+      }
+    }
+
+    if(this.get_object_type(this.content_modifier_object[content_modifier]) === 'dict'){
+      if(Object.keys(this.content_modifier_object[content_modifier]).length === 0) {
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+        return true
+      }
+    }
+
+  }
+  if(this.json_keyword[content_modifier].hasOwnProperty("is_mandatory") && this.json_keyword[content_modifier]["is_mandatory"]) {
+    if(this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
+    }
+  }
+
+  if(this.json_keyword[content_modifier].hasOwnProperty("mandatory_option")) {
+    if( this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
+    } else if( Object.keys(this.content_modifier_object[content_modifier]).length === 0) { 
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[content_modifier]["mandatory_option"]) + " of " + content_modifier 
+      return true
+    } else {
+      let temp_error_list:any = []
+      for(let field of this.json_keyword[content_modifier]["mandatory_option"]) {
+        if(this.get_order_name_html_type(content_modifier, field) == 'check_box_list') {
+          if(this.content_modifier_object[content_modifier][field].length === 0) {
+            temp_error_list.push(field)
+            
+          } 
+        } else {
+          if(this.content_modifier_object[content_modifier][field] === undefined || this.content_modifier_object[content_modifier][field] === '') {
+            temp_error_list.push(field)
+          }
+        }
+      }
+      if(temp_error_list.length > 0) {
+        
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + temp_error_list.join(",")
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+
+validate_common_part(): boolean {
+  let error_count = 0
+  
+  this.generateErrorMeesageDictForCommonField()
+  console.log(this.common_object_dict)
+  for(let field of this.protocol_json_data["common"]["supported_options"]) {
+    if(!this.json_keyword[field].hasOwnProperty("is_mandatory") && !this.json_keyword[field].hasOwnProperty("mandatory_option")) {
+      if(this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+        this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+        this.common_field_help_and_error_message[field].showErrorMessage = true
+        error_count +=1
+      } else {
+        if(this.get_object_type(this.common_object_dict[field]) === 'array'){
+          if(this.common_object_dict[field].length === 0) {
+            this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+            this.common_field_help_and_error_message[field].showErrorMessage = true
+            error_count +=1
+          }
+        }
+
+        if(this.get_object_type(this.common_object_dict[field]) === 'dict'){
+          if(Object.keys(this.common_object_dict[field]).length === 0) {
+            this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+            this.common_field_help_and_error_message[field].showErrorMessage = true
+            error_count +=1
+          }
+        }
+      }
+   }
+
+   if(this.json_keyword[field].hasOwnProperty("is_mandatory") && this.json_keyword[field]["is_mandatory"]) {
+    if(this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+    }
+  }
+
+  if(this.json_keyword[field].hasOwnProperty("mandatory_option")) {
+    if( this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+
+    } else if( Object.keys(this.common_object_dict[field]).length === 0) { 
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[field]["mandatory_option"]) + " of " + field 
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+    } else {
+      let temp_error_list:any = []
+      for(let m of this.json_keyword[field]["mandatory_option"]) {
+        if(this.get_order_name_html_type(field, m) == 'check_box_list') {
+          if(this.common_object_dict[field][m].length === 0) {
+            temp_error_list.push(m)
+          } 
+        } else {
+          if(this.common_object_dict[field][m] === undefined || this.common_object_dict[field][m] === '') {
+            temp_error_list.push(m)
+          }
+        }
+      }
+      if(temp_error_list.length > 0) {
+        this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + temp_error_list.join(",")
+        this.common_field_help_and_error_message[field].showErrorMessage = true
+        error_count +=1
+      }
+    }
+  }
+}
+if(error_count > 1) {
+  return true
+}
+
+return false
+}
+
+/*
+
+*/
+
 
 show_content_modifier_table(): boolean {
   if(this.user_selected_content_modifier["display"].length >0) {
@@ -911,6 +1200,16 @@ protocol_error_message(proto_param:string): string {
   return this.protocol_content_dict[proto_param]["error_message"]
 }
 
+
+
+display_protocol_modifier_error_message(proto_param:string): boolean {
+  return this.protocol_content_modifier_dict[proto_param]["show_error_message"]
+}
+
+get_protocol_modifier_error_message(proto_param:string): string {
+  return this.protocol_content_modifier_dict[proto_param]["error_message"]
+}
+
 on_selection_change(proto_param:any) {
   this.protocol_content_dict[proto_param]['show_content_modifier_table'] = false
 }
@@ -949,18 +1248,23 @@ get_user_selection_table_headers(proto_param:string): string[] {
   return []
 }
 
-//add_user_selected_protocol_details(proto_param:any, protocol_content_selected:any, protocol_modifier_selected:any, negate:any) {
   add_user_selected_protocol_details(proto_param:any) {
 
-    console.log(this.protocol_content_dict)
-    console.log(this.protocol_content_object_dict)
-    console.log(this.protocol_content_modifier_dict)
-    console.log(this.protocol_content_modifier_object_dict)
+    this.protocol_content_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_dict[proto_param]["error_message"] = ''
+
+    this.protocol_content_modifier_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_modifier_dict[proto_param]["error_message"] = ''
+
+    if(this.validate_protocol_inputs(proto_param)) {
+      this.protocol_content_dict[proto_param]["show_error_message"] = true
+      this.protocol_content_modifier_dict[proto_param]["show_error_message"] = true
+      return
+    }
 
     let protocol_content_selected = this.protocol_content_dict[proto_param].selected
     let negate = this.protocol_content_dict[proto_param].negate
     let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
-
     let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
     let protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
 
@@ -985,17 +1289,138 @@ get_user_selection_table_headers(proto_param:string): string[] {
       }
     }
   
-
-  /*
-  this.reset_protocol_object_dict(proto_param)
-  console.log("after reset")
-  console.log(this.user_selected_protocol_details)
-  console.log(this.protocol_content_dict)
-  console.log(this.protocol_content_object_dict)
-  console.log(this.protocol_content_modifier_dict)
-  console.log(this.protocol_content_modifier_object_dict)
-  */
   this.process_protocol_dict()
+}
+
+validate_protocol_inputs(proto_param:string): boolean {
+  let protocol_content_selected = this.protocol_content_dict[proto_param].selected
+  let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
+  let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
+  let protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
+
+
+  if(!this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+    if(protocol_content_value === undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    }
+    if(this.get_object_type(protocol_content_value) === 'array'){
+      if(protocol_content_value.length === 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+        return true
+      }
+    }
+
+    if(this.get_object_type(protocol_content_value) === 'dict'){
+      if(Object.keys(protocol_content_value).length === 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+        return true
+      }
+    }
+
+  }
+  if(this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_content_selected]["is_mandatory"]) {
+    if(protocol_content_value === undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    }
+  }
+  if(this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+    if( protocol_content_value=== undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    } else if( Object.keys(protocol_content_value).length === 0) { 
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[protocol_content_selected]["mandatory_option"]) + " of " + protocol_content_selected 
+      return true
+    } else {
+      let temp_error_list:any = []
+      for(let field of this.json_keyword[protocol_content_selected]["mandatory_option"]) {
+        if(this.get_order_name_html_type(protocol_content_selected, field) == 'check_box_list') {
+          if(protocol_content_value[field].length === 0) {
+            temp_error_list.push(field)
+          } 
+        } else {
+          if(protocol_content_value[field] === undefined || protocol_content_value[field] === '') {
+            temp_error_list.push(field)
+          }
+        }
+      }
+      if(temp_error_list.length > 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + temp_error_list.join(',')
+        return true
+      }
+    }
+  }
+
+
+// this is for protocol content modifier
+
+
+if(protocol_modifier_selected !== undefined){
+
+    if(!this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
+      if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      }
+      if(this.get_object_type(protocol_modifier_value) === 'array'){
+        if(protocol_modifier_value.length === 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+          return true
+        }
+      }
+
+      if(this.get_object_type(protocol_modifier_value) === 'dict'){
+        if(Object.keys(protocol_modifier_value).length === 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+          return true
+        }
+      }
+
+    }
+    if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_modifier_selected]["is_mandatory"]) {
+      if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      }
+    }
+    if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
+      if( protocol_modifier_value=== undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      } else if( Object.keys(protocol_content_value).length === 0) { 
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[protocol_modifier_selected]["mandatory_option"]) + " of " + protocol_modifier_selected 
+        return true
+      } else {
+        let temp_error_list:any = []
+        for(let field of this.json_keyword[protocol_modifier_selected]["mandatory_option"]) {
+          if(this.get_order_name_html_type(protocol_modifier_selected, field) == 'check_box_list') {
+            if(protocol_modifier_value[field].length === 0) {
+              temp_error_list.push(field)
+            } 
+          } else {
+            if(protocol_modifier_value[field] === undefined || protocol_modifier_value[field] === '') {
+              temp_error_list.push(field)
+            }
+          }
+        }
+        if(temp_error_list.length > 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + temp_error_list.join(',')
+          return true
+        }
+      }
+    }
+}
+
+
+
+  return false
+
+
+
+
+
+
 }
 
 get_user_selected_protocol_details_rows_for_table(proto_param:any) {
@@ -1100,7 +1525,11 @@ add_user_selected_meta_keyword(field:any) {
 
  get_user_selection_table_headers_for_meta_keyword(): string[] {
   return this.protocol_json_data["meta_keyword"]["user_selection_table_headers"]
-}
+  }
+
+  get_user_selected_meta_keyword(): string[] {
+    return this.user_selected_meta_keyword["display"]
+    }
 
 }
 

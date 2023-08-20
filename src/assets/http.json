@@ -32,7 +32,7 @@
          }
     ],
     "meta_keyword":{
-        "supported_options": ["gid", "classtype"],
+        "supported_options": ["gid", "classtype", "flow"],
         "supported_options_table_headers":["Select Meta Keyword", "Specify value / Select Options", "Add"],
         "user_selection_table_headers":["Meta Keyword", "Value"]
     }
