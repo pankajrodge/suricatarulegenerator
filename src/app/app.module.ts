@@ -15,13 +15,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpComponent } from './http/http.component';
 import { CommonModule } from '@angular/common';
 import { ProtocolComponent } from './protocol/protocol.component';
+import { TcpComponent } from './tcp/tcp.component';
+import { UdpComponent } from './udp/udp.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HtmlCustomPipePipe,
     HttpComponent,
-    ProtocolComponent
+    ProtocolComponent,
+    TcpComponent,
+    UdpComponent
   ],
   imports: [
     BrowserModule,

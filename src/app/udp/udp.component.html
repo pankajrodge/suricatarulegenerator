@@ -379,6 +379,19 @@
                                 </ng-container>
                              </td>
 
+                             <td *ngIf="protocol_content_dict[proto_param]['selected']">
+                                <ng-container *ngIf="protocol_content_dict[proto_param]['selected']">
+                                    <button type=button (click)="toggleHelp(protocol_content_dict[proto_param]['selected'])" class="help-button">
+                                        Show Help
+                                    </button> 
+                                    <div *ngIf="common_field_help_and_error_message[protocol_content_dict[proto_param]['selected']]['showHelpMessage']" class="help-message">
+                                        <p [innerHTML]="get_help_string(protocol_content_dict[proto_param]['selected'])"></p>
+                                        <button type=button (click)="toggleHelp('all')" class="help-button">Close</button>
+                                    </div>
+                                    
+                                </ng-container>
+                             </td>
+
                              <ng-container *ngIf="!protocol_content_dict[proto_param]['selected']">
                                 <td></td>
                                 <td></td>
@@ -475,7 +488,18 @@
                                         <button type="button" (click)="add_user_selected_protocol_details(proto_param)">Add</button>
                                     </td>
                                     <td>
-                                        show help
+                                        
+                                        <ng-container *ngIf="protocol_content_modifier_dict[proto_param]['selected']">
+                                            <button type=button (click)="toggleHelp(protocol_content_modifier_dict[proto_param]['selected'])" class="help-button">
+                                                Show Help
+                                            </button> 
+                                            <div *ngIf="common_field_help_and_error_message[protocol_content_modifier_dict[proto_param]['selected']]['showHelpMessage']" class="help-message">
+                                                <p [innerHTML]="get_help_string(protocol_content_modifier_dict[proto_param]['selected'])"></p>
+                                                <button type=button (click)="toggleHelp('all')" class="help-button">Close</button>
+                                            </div>
+                                            
+                                        </ng-container>
+                                    
                                     </td>
                                 </ng-container>
 

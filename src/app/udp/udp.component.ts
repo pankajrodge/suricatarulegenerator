@@ -160,7 +160,7 @@ export class UdpComponent implements OnInit {
       this.populate_common_object()
       setTimeout(() => {
         this.formVisible = true; // Display the form after the delay
-      }, 1000)
+      }, 2000)
 
       this.populate_content_modifier_object()
 
@@ -541,32 +541,56 @@ export class UdpComponent implements OnInit {
   }
 
   generateErrorMeesageDictForCommonField() {
+    
     if (this.protocol_json_data["common"]['supported_options']) {
       for (let field of this.protocol_json_data["common"]['supported_options']) {
         this.common_field_help_and_error_message[field] = {}
         this.common_field_help_and_error_message[field]["showErrorMessage"] = false
         this.common_field_help_and_error_message[field]["errorMessage"] = ''
-        this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+        this.common_field_help_and_error_message[field]["showHelpMessage"] = false        
       }
     }
 
     if (this.protocol_json_data["content"]['supported_options']) {
       for (let field of this.protocol_json_data["content"]['supported_options']) {
-        this.common_field_help_and_error_message[field] = {}
-        this.common_field_help_and_error_message[field]["showErrorMessage"] = false
-        this.common_field_help_and_error_message[field]["errorMessage"] = ''
-        this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+          this.common_field_help_and_error_message[field] = {}
+          this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+          this.common_field_help_and_error_message[field]["errorMessage"] = ''
+          this.common_field_help_and_error_message[field]["showHelpMessage"] = false
       }
     }
 
     if (this.protocol_json_data["meta_keyword"]['supported_options']) {
       for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
-        this.common_field_help_and_error_message[field] = {}
-        this.common_field_help_and_error_message[field]["showErrorMessage"] = false
-        this.common_field_help_and_error_message[field]["errorMessage"] = ''
-        this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+          this.common_field_help_and_error_message[field] = {}
+          this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+          this.common_field_help_and_error_message[field]["errorMessage"] = ''
+          this.common_field_help_and_error_message[field]["showHelpMessage"] = false
       }
     }
+
+    if (this.protocol_json_data["protocol"]) {
+      for(let proto_param of this.get_protocol_detail_list()) {
+        for(let k of this.get_protocol_supported_options(proto_param)) {
+            this.common_field_help_and_error_message[k] = {}
+            this.common_field_help_and_error_message[k]["showHelpMessage"] = false
+  
+          //check_if_supported_content_modifier_present
+        //get_content_modifier_list_for_protocol_param
+          if(this.check_if_supported_content_modifier_present(k)) {
+            for(let f of this.get_content_modifier_list_for_protocol_param(k)) {
+ 
+                this.common_field_help_and_error_message[f] = {}
+                this.common_field_help_and_error_message[f]["showHelpMessage"] = false
+         
+            }
+          }
+
+        }
+
+      }
+    }
+
 
   } 
 

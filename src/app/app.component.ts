@@ -28,7 +28,6 @@ export class AppComponent  {
   onOptionSelected() {
     if(this.selectedOption !== "") {
       this.showApp = true
-      console.log(this.selectedOption)
   
       this.check_protocol = this.selectedOption
       this.check_url = this.protocol_dict[this.selectedOption.toLowerCase()]
