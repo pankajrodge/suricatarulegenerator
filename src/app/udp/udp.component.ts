@@ -13,6 +13,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as constants from '../../assets/help';
 
 
+
 @Component({
   selector: 'app-udp',
   templateUrl: './udp.component.html',
@@ -117,88 +118,51 @@ export class UdpComponent implements OnInit {
   } 
 
   get_all_data(text:string) {
+    console.log(text)
+
+    if(this.valid_html_tags.length === 0) {
+      console.log("skipping valid_html_tags")
+      this.http.get(this.url_valid_html_tag).subscribe((data1) => {
+        this.valid_html_tags = data1
+      });
+    }
     
-    this.http.get(this.url_valid_html_tag).subscribe((data1) => {
-      this.valid_html_tags = data1
-    });
-
-    setTimeout(() => {
-      this.formVisible = true; // Display the form after the delay
-    }, 1000)
-
-    this.http.get(this.url_valid_attributes).subscribe((data2) => {
-      this.valid_attributes = data2
-    });
-
-    setTimeout(() => {
-      this.formVisible = true; // Display the form after the delay
-    }, 1000)
-
-    this.http.get(this.url_keyword).subscribe((data3) => {
-      this.json_keyword = data3
-    });
-
-    setTimeout(() => {
-      this.formVisible = true; // Display the form after the delay
-    }, 1000)
-
-
+    if(this.valid_attributes.length === 0) {
+      console.log("skipping valid_attributes")
+      this.http.get(this.url_valid_attributes).subscribe((data2) => {
+        this.valid_attributes = data2
+      });
+    }
+    
+    if(this.json_keyword === undefined) {
+      this.http.get(this.url_keyword).subscribe((data3) => {
+        this.json_keyword = data3
+      });
+    }
+    
     this.sharedService.getData().subscribe(data => {
       this.check_protocol = data.protocol.toLowerCase();
       this.check_url = data.check_url;
     });
-
-    setTimeout(() => {
-      this.formVisible = true; // Display the form after the delay
-    }, 1000)
 
     this.http.get(this.check_url).subscribe((data4) => {
       this.protocol_json_data = data4
 
       // for content modifier
       //this.createFormControlForCommonField()
+
       this.populate_common_object()
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 2000)
-
       this.populate_content_modifier_object()
-
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
-
       this.generateErrorMeesageDictForCommonField()
-
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
-
 
       //for protocol content
       this.prepare_protocol_content_dict() 
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
-
       this.prepare_protocol_content_modifier_dict()
-
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
 
       //for protocol
       this.populate_protocol_object_dict()
 
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
-
       this.populate_user_selected_protocol_details_dict()
-
-      setTimeout(() => {
-        this.formVisible = true; // Display the form after the delay
-      }, 1000)
 
       this.populate_meta_keyword_object_dict()
 
@@ -207,7 +171,8 @@ export class UdpComponent implements OnInit {
 
     setTimeout(() => {
       this.formVisible = true; // Display the form after the delay
-    }, 1000)
+    }, 2000)
+
   }
 
   createFormControlForCommonField() {
@@ -527,16 +492,17 @@ export class UdpComponent implements OnInit {
     */
     
     if(!this.validate_common_part()) {
-      console.log("input correct")
+      //console.log("input correct")
       if(this.dynamicForm.contains("common_field")) {
         this.dynamicForm.removeControl("common_field")
       }
       this.dynamicForm.addControl('common_field', this.formBuilder.control(this.common_object_dict))
     } else {
-      console.log("input incorrect")
+      //console.log("input incorrect")
     }
 
     console.log(this.dynamicForm.value)
+    this.generate_suricata_rules()
 
   }
 
@@ -804,10 +770,26 @@ setValueInFormControl(controlName:any, newValue:any) {
   
 }
 
+sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async delayedAction() {
+  await this.sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
+}
+
+
 get_html_tag_type(field:string): string {
   //console.log(field)
+  //console.log(this.json_keyword)
+  for (let i = 1; i <= 3; i++) {
+    if(this.json_keyword === undefined) {
+      this.delayedAction()
+    } else {
+      break
+    }
+  }
   return this.json_keyword[field]["html_tag_type"]
-  
 }
 
 is_form_array(field:string): boolean {
@@ -900,7 +882,7 @@ add_content_modifier(content_string:any, negate:any, content_modifier:any) {
     this.content_modifier_showErrorMessage = false
   }
 
-  if(content_modifier !== undefined) {
+  if(content_modifier !== undefined && this.get_html_tag_type(content_modifier) !== 'na') {
     if(this.validate_content_modifier(content_modifier)) {
       this.content_modifier_showErrorMessage = true
       return
@@ -909,15 +891,21 @@ add_content_modifier(content_string:any, negate:any, content_modifier:any) {
 
 
   if(content_modifier !== undefined || content_modifier != '') {
-    this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, this.content_modifier_object[content_modifier]])
-    this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier + "=" + JSON.stringify(this.content_modifier_object[content_modifier])])
+    if(this.get_html_tag_type(content_modifier) !== 'na') {
+      this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, this.content_modifier_object[content_modifier]])
+      this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier + "=" + JSON.stringify(this.content_modifier_object[content_modifier])])
+    } else {
+      this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, undefined])
+      this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier, 'Not Applicable'])
+    }
+    
   } else {
     this.user_selected_content_modifier["rows"].push([content_string, negate, undefined, undefined])
     this.user_selected_content_modifier["display"].push([content_string, negate, '', ''])
   }
 
-  console.log("dynamic for before process_content_modifier")
-  console.log(this.dynamicForm.value)
+  //console.log("dynamic for before process_content_modifier")
+  //console.log(this.dynamicForm.value)
 
   this.process_content_modifier()
   this.clear_content_match_dict()
@@ -993,7 +981,7 @@ validate_common_part(): boolean {
   let error_count = 0
   
   this.generateErrorMeesageDictForCommonField()
-  console.log(this.common_object_dict)
+  //console.log(this.common_object_dict)
   for(let field of this.protocol_json_data["common"]["supported_options"]) {
     if(!this.json_keyword[field].hasOwnProperty("is_mandatory") && !this.json_keyword[field].hasOwnProperty("mandatory_option")) {
       if(this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
@@ -1110,11 +1098,11 @@ process_content_modifier() {
   
   this.dynamicForm.addControl('content_modifier', this.formBuilder.control(temp_list))
 
-  console.log("user_selected_content_modifier option  post process_content_modifier")
-  console.log(this.user_selected_content_modifier)
+  //console.log("user_selected_content_modifier option  post process_content_modifier")
+  //console.log(this.user_selected_content_modifier)
 
-  console.log("dynamic for post process_content_modifier")
-  console.log(this.dynamicForm.value)
+  //console.log("dynamic for post process_content_modifier")
+  //console.log(this.dynamicForm.value)
 
 }
 
@@ -1136,7 +1124,7 @@ get_object_type(obj:any): string {
 get_default_value(field:string): string {
   //console.log("default  " + field)
   if(this.json_keyword[field].hasOwnProperty("default_value")) {
-    console.log("default " + field + " " + this.json_keyword[field]["default_value"])
+    //console.log("default " + field + " " + this.json_keyword[field]["default_value"])
     return this.json_keyword[field]["default_value"]
   }
   return ''
@@ -1292,7 +1280,7 @@ get_user_selection_table_headers(proto_param:string): string[] {
     let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
     let protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
 
-    console.log(proto_param, protocol_content_selected, protocol_content_value, negate, protocol_modifier_selected, protocol_modifier_value)
+    //console.log(proto_param, protocol_content_selected, protocol_content_value, negate, protocol_modifier_selected, protocol_modifier_value)
     
     if(protocol_content_selected !== undefined || protocol_content_selected !== '') {
       this.user_selected_protocol_details[proto_param]["rows"].push([protocol_content_selected, 
@@ -1435,16 +1423,7 @@ if(protocol_modifier_selected !== undefined){
       }
     }
 }
-
-
-
   return false
-
-
-
-
-
-
 }
 
 get_user_selected_protocol_details_rows_for_table(proto_param:any) {
@@ -1478,7 +1457,7 @@ remove_user_selection_entry(index:any, proto_param:any) {
   this.user_selected_protocol_details[proto_param]["rows"].splice(index, 1)
   this.user_selected_protocol_details[proto_param]["display"].splice(index, 1)
   //TODO process protocol
-  console.log(this.user_selected_protocol_details)
+  //console.log(this.user_selected_protocol_details)
   this.process_protocol_dict()
 }
 
@@ -1519,7 +1498,7 @@ add_user_selected_meta_keyword(field:any) {
   } else {
     this.user_selected_meta_keyword["display"].push([field, ''])
   }
-  console.log(this.user_selected_meta_keyword)
+  //console.log(this.user_selected_meta_keyword)
   this.process_user_selected_metakeyword()
   }
   
@@ -1527,7 +1506,7 @@ add_user_selected_meta_keyword(field:any) {
   this.user_selected_meta_keyword["rows"].splice(index, 1)
   this.user_selected_meta_keyword["display"].splice(index, 1)
 
-  console.log(this.user_selected_meta_keyword)
+  //console.log(this.user_selected_meta_keyword)
   this.process_user_selected_metakeyword()
  }
 
@@ -1537,7 +1516,7 @@ add_user_selected_meta_keyword(field:any) {
   }
   
   this.dynamicForm.addControl('meta_keyword', this.formBuilder.control(this.user_selected_meta_keyword["rows"]))
-  console.log(this.dynamicForm.value)
+  //console.log(this.dynamicForm.value)
  }
 
  show_user_selected_meta_keyword_table(): boolean {
@@ -1547,13 +1526,178 @@ add_user_selected_meta_keyword(field:any) {
   return false
  }
 
- get_user_selection_table_headers_for_meta_keyword(): string[] {
-  return this.protocol_json_data["meta_keyword"]["user_selection_table_headers"]
+  get_user_selection_table_headers_for_meta_keyword(): string[] {
+   return this.protocol_json_data["meta_keyword"]["user_selection_table_headers"]
   }
 
   get_user_selected_meta_keyword(): string[] {
     return this.user_selected_meta_keyword["display"]
+  }
+
+
+  generate_suricata_rules() {
+    
+    let dictionary = this.dynamicForm.value
+     if(dictionary["content_modifier"].length>0) {
+      this.generate_content_modifier_rules()
+     }
+
+     
+  }
+
+  get_string(key:any, value:any, negate:boolean = false): string {
+    let temp_string = ''
+    let key_value_separator= ':'
+    let value_seperator = ','
+    let negate_string = ''
+    let value_in_double_quotes = true
+
+    if(negate) {
+      negate_string = '!'
     }
+
+    //common part to handle
+    if(this.json_keyword[key]["key_value_separator"]) {
+      key_value_separator = this.json_keyword[key]["key_value_separator"]
+    }
+
+    if(this.json_keyword[key].hasOwnProperty("value_in_double_quotes") && !this.json_keyword[key]["value_in_double_quotes"]) {
+      value_in_double_quotes = false
+    }
+
+    if(this.json_keyword[key]["value_seperator"]) {
+      value_seperator = this.json_keyword[key]["value_seperator"]
+    }
+
+
+    if(this.get_html_tag_type(key) === 'na') {
+      //save_user_input_with_prefix_as
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"][key]
+      } else {
+        temp_string = key
+      }
+      
+    }
+
+    if(this.get_html_tag_type(key) === 'text' || this.get_html_tag_type(key) === 'drop_down' ) {
+      let t_value = value
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_value = this.json_keyword[key]["save_user_input_with_prefix_as"][key] + ' ' + value
+      }
+      if(value_in_double_quotes) {
+        temp_string = key + key_value_separator + negate_string + '"' + t_value + '"'
+      } else {
+        temp_string = key + key_value_separator + negate_string + t_value 
+      }
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box') {
+      if(typeof value === 'boolean') {
+        if(value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+
+      if(typeof value === 'string') {
+        if(key === value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box_list') {
+      let t_str = ''
+
+      if(this.get_object_type(value) === 'string') {
+        t_str = value
+      }
+      if(this.get_object_type(value) === 'array') {
+        t_str = value.join(value_seperator)
+      }
+
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_str = this.json_keyword[key]["save_user_input_with_prefix_as"][key] + ' ' + t_str
+      }
+
+      if(value_in_double_quotes) { 
+        temp_string = key + key_value_separator + negate_string + '"' + t_str + '"'
+      } else {
+        temp_string = key + key_value_separator + negate_string + t_str 
+      }
+    }
+
+    if(this.get_html_tag_type(key) === 'ordered_tag_mandatory_optional') {
+      let t_string_list = []
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) { 
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            if(this.json_keyword[key]["save_user_input_with_prefix_as"][oName]){
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + oName)
+              } else {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + value[oName])
+              }
+             
+            } else {
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(oName)
+              } else {
+                t_string_list.push(value[oName])
+              }
+              
+            }
+          }
+        }
+      } else {
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            t_string_list.push(value[oName])
+          }
+        }
+      }
+
+      if(value_in_double_quotes) { 
+        temp_string = key +  key_value_separator + negate_string + '"' + t_string_list.join(value_seperator) + '"'
+      } else {
+        temp_string = key +  key_value_separator + negate_string + t_string_list.join(value_seperator)
+      }
+
+      
+    }
+
+    return temp_string
+
+  }
+
+  
+  generate_content_modifier_rules() {
+    let temp_dict:any = {}
+    let temp_rule_list:any = []
+
+    let temp_rule_string = ''
+    let dictionary = this.dynamicForm.value
+    let common_list = [dictionary["common_field"]['action'],  this.check_protocol.toLowerCase(),
+     dictionary["common_field"]['source_ip'], dictionary["common_field"]['source_port'], dictionary["common_field"]['flow_direction'], 
+     dictionary["common_field"]['destination_ip'], dictionary["common_field"]['destination_port']]
+     temp_rule_string += common_list.join(" ") + ' ( msg: "' + dictionary["common_field"]["msg"] + '";'
+     let end_string = ')'
+
+    for(let cm of this.dynamicForm.value["content_modifier"]) {
+      let t = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+      console.log(t)
+    }
+
+    }
+
+    
+     
+  
+
 
 }
 

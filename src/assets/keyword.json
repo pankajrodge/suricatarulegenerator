@@ -103,6 +103,10 @@
         "mandatory_option": ["number_of_bytes*", "operator*", "value*"],
         "order_name": ["number_of_bytes*", "operator*", "value*", "offset", "relative", "endian", "string_representation", "dce", "bitmask"],
         "value_seperator": ",",
+        "value_in_double_quotes": false,
+        "save_user_input_with_prefix_as": {
+            "string_representation": "string"
+        },
         "drop_down_dict": {
             "operator*": {
                 "None": "", 
@@ -425,7 +429,8 @@
         "check_box_list": ["to_client", "to_server", "from_client", "from_server", "established", 
         "not_established", "stateless", "only_stream", "no_stream", "only_frag", "no_frag"],
         "value_seperator": ",",
-        "lable_descrption": "Flow"
+        "lable_descrption": "Flow",
+        "is_mandatory": false
     },
 
 
