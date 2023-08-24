@@ -77,6 +77,9 @@ export class UdpComponent implements OnInit {
 
   public user_selected_meta_keyword:any = {}
 
+  public final_suricata_rule_list:any = []
+  public final_suricata_rule_check_status_list:any = []
+
   constructor(
     private jsonService: JsonReaderService,
     private sanitizer: DomSanitizer,
@@ -503,6 +506,7 @@ export class UdpComponent implements OnInit {
 
     console.log(this.dynamicForm.value)
     this.generate_suricata_rules()
+    this.checkRules()
 
   }
 
@@ -1541,8 +1545,14 @@ add_user_selected_meta_keyword(field:any) {
      if(dictionary["content_modifier"].length>0) {
       this.generate_content_modifier_rules()
      }
+  }
 
-     
+  generateNumberedList(ruleList:any): string {
+    let numberedString = '';
+    ruleList.forEach((item:any, index:any) => {
+      numberedString += `${index + 1}. ${item}\n`;
+    });
+    return numberedString;
   }
 
   get_string(key:any, value:any, negate:boolean = false): string {
@@ -1550,7 +1560,7 @@ add_user_selected_meta_keyword(field:any) {
     let key_value_separator= ':'
     let value_seperator = ','
     let negate_string = ''
-    let value_in_double_quotes = true
+    let value_in_double_quotes = false
 
     if(negate) {
       negate_string = '!'
@@ -1676,23 +1686,124 @@ add_user_selected_meta_keyword(field:any) {
 
   
   generate_content_modifier_rules() {
+    this.final_suricata_rule_list = []
     let temp_dict:any = {}
-    let temp_rule_list:any = []
+    let temp_rule_content_string_part:any = {}
 
     let temp_rule_string = ''
+    let meta_keyword_string = ''
     let dictionary = this.dynamicForm.value
     let common_list = [dictionary["common_field"]['action'],  this.check_protocol.toLowerCase(),
      dictionary["common_field"]['source_ip'], dictionary["common_field"]['source_port'], dictionary["common_field"]['flow_direction'], 
      dictionary["common_field"]['destination_ip'], dictionary["common_field"]['destination_port']]
      temp_rule_string += common_list.join(" ") + ' ( msg: "' + dictionary["common_field"]["msg"] + '";'
-     let end_string = ')'
+     let end_string = ';)'
+    
+     if(this.dynamicForm.value.hasOwnProperty("meta_keyword") && this.dynamicForm.value["meta_keyword"].length>0) {
+      let meta_temp_list = []
+      for(let mk of this.dynamicForm.value["meta_keyword"]) {
+        meta_temp_list.push(this.get_string(mk[0], mk[1]))
+      }
 
+      meta_keyword_string = meta_temp_list.join(';')
+     }
+     
     for(let cm of this.dynamicForm.value["content_modifier"]) {
-      let t = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
-      console.log(t)
+      let negate_string = ''
+      let cm_string = ''
+      let final_rule = ''
+      let cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+      if(cm["negate"]) {
+        negate_string = "!" 
+      }
+      cm_string = "content:" + negate_string + '"' + cm["content_string"] + '";'
+      if(meta_keyword_string === '') {
+        final_rule = temp_rule_string + cm_string + cont_mod_string + end_string
+        this.final_suricata_rule_list.push(final_rule)
+      } else {
+        final_rule = temp_rule_string + cm_string + cont_mod_string +';' + meta_keyword_string + end_string
+        this.final_suricata_rule_list.push(final_rule)
+      }
+      
+
+      let check_string = cm_string+'_' + cm["negate"].toString()
+      if(!temp_dict.hasOwnProperty(check_string)) {
+        temp_dict[check_string] = []
+        temp_dict[check_string].push(cont_mod_string)
+      } else {
+        temp_dict[check_string].push(cont_mod_string)
+      }
+
+      if(!temp_rule_content_string_part.hasOwnProperty(check_string)) {
+        temp_rule_content_string_part[check_string] = cm_string
+      }
     }
 
+    for(let k of Object.keys(temp_dict)) {
+      let final_rule = ''
+      if(temp_dict[k].length>1) {
+        if(meta_keyword_string === '') {
+          final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') + end_string
+          this.final_suricata_rule_list.push(final_rule)
+        } else {
+          final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
+          this.final_suricata_rule_list.push(final_rule)
+        }
+        
+      }
     }
+    
+
+    }
+  
+  async checkRules() {
+    this.final_suricata_rule_check_status_list = []
+    if(this.final_suricata_rule_list.length > 0) {
+      for (const [index, rule] of this.final_suricata_rule_list.entries()) {
+        let timeout = 15000
+        
+        //let t = this.checkGeneratedSuricataRule(rule, index+1)
+        let check_url='http://' + this.server + '/validate_rule?check_rule=' + rule
+        console.log(check_url)
+
+        const request = await axios.get(check_url);
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Request timed out'));
+          }, timeout);
+        });
+
+      Promise.race([request, timeoutPromise])
+      .then((response: AxiosResponse) => {
+        console.log(response.data);
+          let text = response.data['error'];
+          let pattern = /rule \d/i;
+          let rule_index = index + 1
+          let replacedText = text.replace(pattern, 'Rule ' + rule_index);
+          /* 
+          1. Rule is OK
+  2. Issue in the rule.  Rule 2 mixes keywords with conflicting directions
+  3. Issue in the rule.  Rule 3 setup buffer http_uri but didn't add matches to it  
+          */
+          let error_string_1 = 'mixes keywords with conflicting directions'
+          const regex = new RegExp(error_string_1);
+
+          if (regex.test(replacedText)) {
+            replacedText += ". Possible corrective action to check flow selection"
+          }
+
+
+
+          this.final_suricata_rule_check_status_list.push(replacedText)
+      }).catch((error: Error) => {
+        throw error;
+      });
+
+      }
+      console.log(this.final_suricata_rule_check_status_list)
+    }
+  }
 
     
      

@@ -691,7 +691,22 @@
             <!-- Meta keyword end here -->
 
         </ng-container>
-    
+        <ng-container *ngIf="final_suricata_rule_list.length> 0">
+            <label>Generated Rule </label><br>
+            <textarea [value]="generateNumberedList(final_suricata_rule_list)">
+                
+            </textarea>
+            <br>
+            <label>Rule Testing Status </label><br>
+            </ng-container> 
+            <br>
+            <ng-container *ngIf="final_suricata_rule_check_status_list.length> 0">
+                
+                <textarea [value]="generateNumberedList(final_suricata_rule_check_status_list)">
+                </textarea>
+            </ng-container>
+            
+            <br>
         <br>
         <button class="button-marging" type="submit" (ngSubmit)="onSubmit()">Submit</button>
     </div>
