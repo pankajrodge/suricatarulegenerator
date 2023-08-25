@@ -2059,7 +2059,6 @@ add_user_selected_meta_keyword(field:any) {
     } else {
       return temp_string
     }
-    
   }
 
   getHexValue(c:string) {

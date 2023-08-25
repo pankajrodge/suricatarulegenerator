@@ -287,7 +287,7 @@
                         <label  class="label-error-mesage">{{get_protocol_modifier_error_message(proto_param)}}</label>
                     </ng-container>
                    
-                    <br><br>
+                    <br>
                     <table *ngIf="display_protocol_content_user_selection_table(proto_param)">
                         <thead>
                             <tr>
@@ -401,7 +401,7 @@
 
                         </tr>
                         </table>
-                        <br><br>
+                        <br>
                         <table *ngIf="display_protocol_content_modifier_table(proto_param)">
                             <thead>
                                  <tr>
@@ -549,15 +549,13 @@
             <!-- Meta keyword end here -->
             <section>
                 <ng-container *ngIf="protocol_json_data['meta_keyword']">
-                    <br><br>
                     <ng-container *ngIf="protocol_json_data['meta_keyword']['supported_options']">
                         <label for="meta_keyword">Meta keword : </label>
                         <button [disabled]="disable_meta_keyword" type="button" (click)="add_meta_keyword()">Add Meta Keword</button>
-                        
-                        <br><br>
+                        <br>
                         <div *ngIf="show_meta_keyword_table">
-                            
-                            <br><br>
+
+                            <br>
                             <table>
                                 <thead>
                                     <tr>

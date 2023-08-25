@@ -1,6 +1,6 @@
 {
     "common": {
-        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow", "relative", "flowbits"]
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
     },
     "content": {
         "supported_options": ["flow", "relative", "action", "nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
