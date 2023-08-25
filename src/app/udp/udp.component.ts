@@ -1838,15 +1838,11 @@ add_user_selected_meta_keyword(field:any) {
     let key_value_separator= ':'
     let value_in_double_quotes = this.check_attribute_present_and_true_if_not(key, "value_in_double_quotes")
 
-
-    //common part to handle
     if(this.json_keyword[key]["key_value_separator"]) {
       key_value_separator = this.json_keyword[key]["key_value_separator"]
     }
 
-
     if(this.get_html_tag_type(key) === 'na') {
-      //save_user_input_with_prefix_as
       if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
         temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"][key]
       } else {
@@ -1922,7 +1918,7 @@ add_user_selected_meta_keyword(field:any) {
         if(cm["negate"]) {
           negate_string = "!" 
         }
-        cm_string = "content:" + negate_string + '"' + cm["content_string"] + '";'
+        cm_string = "content:" + negate_string + '"' + this.normalizeTheContentString(cm["content_string"]) + '";'
         if(meta_keyword_string === '') {
           final_rule = temp_rule_string + cm_string + cont_mod_string + end_string
           this.final_suricata_rule_list.push(final_rule)
@@ -1981,7 +1977,7 @@ add_user_selected_meta_keyword(field:any) {
       if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
         t_value = this.json_keyword[key]["save_user_input_with_prefix_as"] + ' ' + value
       }
-      temp_string = t_value      
+      temp_string = this.normalizeTheContentString(t_value)    
     }
 
     if(this.get_html_tag_type(key) === 'check_box') {
@@ -2065,6 +2061,41 @@ add_user_selected_meta_keyword(field:any) {
     }
     
   }
+
+  getHexValue(c:string) {
+    let hex = c.charCodeAt(0).toString(16).toUpperCase();
+    if(hex.length ==1) {
+      hex = '0'+hex
+    }
+    return hex
+  }
+
+  normalizeTheContentString(content_string:string): string {
+    let newstring: string = ''
+    let string_length = content_string.length
+    let char_list = content_string.split('')
+  
+    for(let i=0;i<string_length; i++){
+      if(i != string_length) {
+        if(char_list[i] === '\\') {
+          if(char_list[i+1] === 'r' || char_list[i+1] === 'n') {
+            newstring= newstring + '|'+this.getHexValue(char_list[i] + char_list[i+1])+'|'
+            i = i+1
+        }
+      } else {
+        if(this.specialCharacterPattern.test(char_list[i])) {
+          newstring= newstring + '|'+this.getHexValue(char_list[i])+'|'
+        } else {
+          newstring= newstring + char_list[i]
+        }
+      }
+      }
+    }
+
+    newstring = newstring.replace(/\|\|/g, ' ');
+    return newstring
+  }
+
   
   generate_protocol_rules() {
     if(this.do_generate_rules_given_item("protocol")){

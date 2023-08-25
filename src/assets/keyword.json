@@ -676,8 +676,12 @@
         "no_content": true,
         "value_in_double_quotes": false,
         "show_negate_option": true
+    },
+
+    "dns.query": {
+        "html_tag_type": "text",
+        "show_negate_option": true,
+        "sticky_buffer": true
     }
-
-
 
 }

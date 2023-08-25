@@ -10,7 +10,7 @@
     "protocol": [
         {
             "dns_parameters": {
-                "supported_options": ["dns.opcode"],
+                "supported_options": ["dns.opcode", "dns.query"],
                 "supported_options_table_headers":["DNS Option", "Select Options", "Add Content Modifier", "Description"],
                 "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
                 "user_selection_table_headers":["DNS Option", "Content Value", "Content Modifier", "Content Condition", "Negate Content"]
