@@ -121,17 +121,17 @@ export class UdpComponent implements OnInit {
   } 
 
   get_all_data(text:string) {
-    console.log(text)
+    //console.log(text)
 
     if(this.valid_html_tags.length === 0) {
-      console.log("skipping valid_html_tags")
+      //console.log("skipping valid_html_tags")
       this.http.get(this.url_valid_html_tag).subscribe((data1) => {
         this.valid_html_tags = data1
       });
     }
     
     if(this.valid_attributes.length === 0) {
-      console.log("skipping valid_attributes")
+      //console.log("skipping valid_attributes")
       this.http.get(this.url_valid_attributes).subscribe((data2) => {
         this.valid_attributes = data2
       });
@@ -506,6 +506,7 @@ export class UdpComponent implements OnInit {
 
     console.log(this.dynamicForm.value)
     this.generate_suricata_rules()
+    
     this.checkRules()
 
   }
@@ -1540,11 +1541,10 @@ add_user_selected_meta_keyword(field:any) {
 
 
   generate_suricata_rules() {
-    
-    let dictionary = this.dynamicForm.value
-     if(dictionary["content_modifier"].length>0) {
-      this.generate_content_modifier_rules()
-     }
+     this.final_suricata_rule_list = []
+     this.final_suricata_rule_check_status_list = []
+     this.generate_content_modifier_rules()
+     this.generate_protocol_rules()
   }
 
   generateNumberedList(ruleList:any): string {
@@ -1553,6 +1553,51 @@ add_user_selected_meta_keyword(field:any) {
       numberedString += `${index + 1}. ${item}\n`;
     });
     return numberedString;
+  }
+
+
+  async checkRules() {
+    this.final_suricata_rule_check_status_list = []
+    if(this.final_suricata_rule_list.length > 0) {
+      for (const [index, rule] of this.final_suricata_rule_list.entries()) {
+        let timeout = 15000
+        
+        //let t = this.checkGeneratedSuricataRule(rule, index+1)
+        let check_url='http://' + this.server + '/validate_rule?check_rule=' + rule
+        console.log(check_url)
+
+        const request = await axios.get(check_url);
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Request timed out'));
+          }, timeout);
+        });
+
+      Promise.race([request, timeoutPromise])
+      .then((response: AxiosResponse) => {
+        console.log(response.data);
+          let text = response.data['error'];
+          let pattern = /rule \d/i;
+          let rule_index = index + 1
+          let replacedText = text.replace(pattern, 'Rule ' + rule_index);
+          let error_string_1 = 'mixes keywords with conflicting directions'
+          const regex = new RegExp(error_string_1);
+
+          if (regex.test(replacedText)) {
+            replacedText += ". Possible corrective action to check flow selection"
+          }
+
+
+
+          this.final_suricata_rule_check_status_list.push(replacedText)
+      }).catch((error: Error) => {
+        throw error;
+      });
+
+      }
+      console.log(this.final_suricata_rule_check_status_list)
+    }
   }
 
   get_string(key:any, value:any, negate:boolean = false): string {
@@ -1624,9 +1669,15 @@ add_user_selected_meta_keyword(field:any) {
       let t_str = ''
 
       if(this.get_object_type(value) === 'string') {
+        if(value === '') {
+          return ''
+        }
         t_str = value
       }
       if(this.get_object_type(value) === 'array') {
+        if(value.length === 0) {
+          return ''
+        }
         t_str = value.join(value_seperator)
       }
 
@@ -1671,142 +1722,325 @@ add_user_selected_meta_keyword(field:any) {
         }
       }
 
-      if(value_in_double_quotes) { 
-        temp_string = key +  key_value_separator + negate_string + '"' + t_string_list.join(value_seperator) + '"'
-      } else {
-        temp_string = key +  key_value_separator + negate_string + t_string_list.join(value_seperator)
+      if(t_string_list.length >0) {
+        if(value_in_double_quotes) { 
+          temp_string = key +  key_value_separator + negate_string + '"' + t_string_list.join(value_seperator) + '"'
+        } else {
+          temp_string = key +  key_value_separator + negate_string + t_string_list.join(value_seperator)
+        }
       }
 
-      
+
     }
 
     return temp_string
 
   }
 
-  
-  generate_content_modifier_rules() {
-    this.final_suricata_rule_list = []
-    let temp_dict:any = {}
-    let temp_rule_content_string_part:any = {}
+  check_attribute_present_and_true_if_not(key:string, attribute:string): boolean {
+    if(this.json_keyword[key].hasOwnProperty(attribute)) {
+      if(this.json_keyword[key][attribute]) {
+        return true
+      } else {
+        return false
+      }
+    }
+    return true
+  }
 
-    let temp_rule_string = ''
-    let meta_keyword_string = ''
+
+  check_attribute_present_and_false_if_not(key:string, attribute:string): boolean {
+    if(this.json_keyword[key].hasOwnProperty(attribute)) {
+      if(this.json_keyword[key][attribute]) {
+        return true
+      } else {
+        return false
+      }
+    }
+    return false
+  }
+
+
+  get_sticky_buffer_string(key:any, value:any, negate:boolean, value_in_double_quotes:boolean, key_value_separator=':'): string {
+    let temp_string = ''
+    let negate_string = ''
+    let is_sticky_buffer = this.check_attribute_present_and_false_if_not(key, "sticky_buffer")
+    let is_no_content = this.check_attribute_present_and_false_if_not(key, "no_content")
+
+    if(negate) {
+      negate_string = '!'
+    }
+
+    if(is_no_content) {
+      temp_string = key + key_value_separator + this.get_value_string(key, value, value_in_double_quotes)
+    } else {
+      if(is_sticky_buffer){
+        temp_string = key + ';' + "content:" + negate_string + this.get_value_string(key, value, value_in_double_quotes)
+      } else {
+        temp_string = "content:" + negate_string + this.get_value_string(key, value, value_in_double_quotes) + ';' + key
+      }
+
+    }
+    return temp_string
+  }
+
+  get_protocol_string(key:any, value:any, negate:boolean = false): string {
+    let temp_string = ''
+    let key_value_separator= ':'
+    let value_in_double_quotes = this.check_attribute_present_and_true_if_not(key, "value_in_double_quotes")
+
+
+    //common part to handle
+    if(this.json_keyword[key]["key_value_separator"]) {
+      key_value_separator = this.json_keyword[key]["key_value_separator"]
+    }
+
+
+    if(this.get_html_tag_type(key) === 'na') {
+      //save_user_input_with_prefix_as
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"][key]
+      } else {
+        temp_string = key
+      }
+      
+    } else {
+      temp_string = this.get_sticky_buffer_string(key, value, negate, value_in_double_quotes, key_value_separator)
+    }
+
+    return temp_string
+
+  }
+
+
+  get_common_part_string(): string {
+    let skip_list = ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "flow_direction", "action"]
     let dictionary = this.dynamicForm.value
     let common_list = [dictionary["common_field"]['action'],  this.check_protocol.toLowerCase(),
      dictionary["common_field"]['source_ip'], dictionary["common_field"]['source_port'], dictionary["common_field"]['flow_direction'], 
      dictionary["common_field"]['destination_ip'], dictionary["common_field"]['destination_port']]
-     temp_rule_string += common_list.join(" ") + ' ( msg: "' + dictionary["common_field"]["msg"] + '";'
-     let end_string = ';)'
-    
-     if(this.dynamicForm.value.hasOwnProperty("meta_keyword") && this.dynamicForm.value["meta_keyword"].length>0) {
+     let temp_rule_string = common_list.join(" ") + ' ( msg: "' + dictionary["common_field"]["msg"] + '";'
+
+     for(let f of Object.keys(dictionary["common_field"])){
+      if(!skip_list.includes(f)) {
+        let k_str = this.get_string(f, dictionary["common_field"][f])
+        if(k_str != '') {
+          temp_rule_string +=  k_str + ';'
+        }
+        
+      }
+     }
+     return temp_rule_string
+  }
+
+  get_meta_keyword_string(): string {
+    let meta_keyword_string = ''
+    if(this.dynamicForm.value.hasOwnProperty("meta_keyword") && this.dynamicForm.value["meta_keyword"].length>0) {
       let meta_temp_list = []
       for(let mk of this.dynamicForm.value["meta_keyword"]) {
         meta_temp_list.push(this.get_string(mk[0], mk[1]))
       }
-
       meta_keyword_string = meta_temp_list.join(';')
      }
-     
-    for(let cm of this.dynamicForm.value["content_modifier"]) {
-      let negate_string = ''
-      let cm_string = ''
-      let final_rule = ''
-      let cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
-      if(cm["negate"]) {
-        negate_string = "!" 
-      }
-      cm_string = "content:" + negate_string + '"' + cm["content_string"] + '";'
-      if(meta_keyword_string === '') {
-        final_rule = temp_rule_string + cm_string + cont_mod_string + end_string
-        this.final_suricata_rule_list.push(final_rule)
-      } else {
-        final_rule = temp_rule_string + cm_string + cont_mod_string +';' + meta_keyword_string + end_string
-        this.final_suricata_rule_list.push(final_rule)
-      }
-      
+    return meta_keyword_string
+  }  
 
-      let check_string = cm_string+'_' + cm["negate"].toString()
-      if(!temp_dict.hasOwnProperty(check_string)) {
-        temp_dict[check_string] = []
-        temp_dict[check_string].push(cont_mod_string)
-      } else {
-        temp_dict[check_string].push(cont_mod_string)
-      }
-
-      if(!temp_rule_content_string_part.hasOwnProperty(check_string)) {
-        temp_rule_content_string_part[check_string] = cm_string
-      }
-    }
-
-    for(let k of Object.keys(temp_dict)) {
-      let final_rule = ''
-      if(temp_dict[k].length>1) {
+  generate_content_modifier_rules() {
+    if(this.dynamicForm.value.hasOwnProperty("content_modifier") && this.dynamicForm.value["content_modifier"].length>0){
+      this.final_suricata_rule_list = []
+      let temp_dict:any = {}
+      let temp_rule_content_string_part:any = {}
+  
+      let temp_rule_string = this.get_common_part_string()
+      let meta_keyword_string = this.get_meta_keyword_string()
+      let end_string = ';)'
+      for(let cm of this.dynamicForm.value["content_modifier"]) {
+        let negate_string = ''
+        let cm_string = ''
+        let final_rule = ''
+        let cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+        if(cm["negate"]) {
+          negate_string = "!" 
+        }
+        cm_string = "content:" + negate_string + '"' + cm["content_string"] + '";'
         if(meta_keyword_string === '') {
-          final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') + end_string
+          final_rule = temp_rule_string + cm_string + cont_mod_string + end_string
           this.final_suricata_rule_list.push(final_rule)
         } else {
-          final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
+          final_rule = temp_rule_string + cm_string + cont_mod_string +';' + meta_keyword_string + end_string
           this.final_suricata_rule_list.push(final_rule)
         }
         
-      }
-    }
-    
-
-    }
   
-  async checkRules() {
-    this.final_suricata_rule_check_status_list = []
-    if(this.final_suricata_rule_list.length > 0) {
-      for (const [index, rule] of this.final_suricata_rule_list.entries()) {
-        let timeout = 15000
-        
-        //let t = this.checkGeneratedSuricataRule(rule, index+1)
-        let check_url='http://' + this.server + '/validate_rule?check_rule=' + rule
-        console.log(check_url)
-
-        const request = await axios.get(check_url);
-
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => {
-            reject(new Error('Request timed out'));
-          }, timeout);
-        });
-
-      Promise.race([request, timeoutPromise])
-      .then((response: AxiosResponse) => {
-        console.log(response.data);
-          let text = response.data['error'];
-          let pattern = /rule \d/i;
-          let rule_index = index + 1
-          let replacedText = text.replace(pattern, 'Rule ' + rule_index);
-          /* 
-          1. Rule is OK
-  2. Issue in the rule.  Rule 2 mixes keywords with conflicting directions
-  3. Issue in the rule.  Rule 3 setup buffer http_uri but didn't add matches to it  
-          */
-          let error_string_1 = 'mixes keywords with conflicting directions'
-          const regex = new RegExp(error_string_1);
-
-          if (regex.test(replacedText)) {
-            replacedText += ". Possible corrective action to check flow selection"
+        let check_string = cm_string+'_' + cm["negate"].toString()
+        if(!temp_dict.hasOwnProperty(check_string)) {
+          temp_dict[check_string] = []
+          temp_dict[check_string].push(cont_mod_string)
+        } else {
+          temp_dict[check_string].push(cont_mod_string)
+        }
+  
+        if(!temp_rule_content_string_part.hasOwnProperty(check_string)) {
+          temp_rule_content_string_part[check_string] = cm_string
+        }
+      }
+  
+      for(let k of Object.keys(temp_dict)) {
+        let final_rule = ''
+        if(temp_dict[k].length>1) {
+          if(meta_keyword_string === '') {
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') + end_string
+            this.final_suricata_rule_list.push(final_rule)
+          } else {
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
+            this.final_suricata_rule_list.push(final_rule)
           }
+         }
+        }
+    }
+ 
+    }
+
+  get_value_string(key:any, value:any, value_in_double_quotes:boolean): string {
+    let temp_string = ''
+    let value_seperator = ','
+
+    if(this.json_keyword[key]["value_seperator"]) {
+      value_seperator = this.json_keyword[key]["value_seperator"]
+    }
 
 
+    if(this.get_html_tag_type(key) === 'na') {
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"]
+      }     
+    }
 
-          this.final_suricata_rule_check_status_list.push(replacedText)
-      }).catch((error: Error) => {
-        throw error;
-      });
+    if(this.get_html_tag_type(key) === 'text' || this.get_html_tag_type(key) === 'drop_down' ) {
+      let t_value = value
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_value = this.json_keyword[key]["save_user_input_with_prefix_as"] + ' ' + value
+      }
+      temp_string = t_value      
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box') {
+      if(typeof value === 'boolean') {
+        if(value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+
+      if(typeof value === 'string') {
+        if(key === value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box_list') {
+      let t_str = ''
+
+      if(this.get_object_type(value) === 'string') {
+        if(value === '') {
+          return ''
+        }
+        t_str = value
+      }
+      if(this.get_object_type(value) === 'array') {
+        if(value.length === 0) {
+          return ''
+        }
+        t_str = value.join(value_seperator)
+      }
+
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_str = this.json_keyword[key]["save_user_input_with_prefix_as"] + ' ' + t_str
+      }
+      temp_string = t_str
+
+    }
+
+    if(this.get_html_tag_type(key) === 'ordered_tag_mandatory_optional') {
+      let t_string_list = []
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) { 
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            if(this.json_keyword[key]["save_user_input_with_prefix_as"][oName]){
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + oName)
+              } else {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + value[oName])
+              }
+             
+            } else {
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(oName)
+              } else {
+                t_string_list.push(value[oName])
+              }
+              
+            }
+          }
+        }
+      } else {
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            t_string_list.push(value[oName])
+          }
+        }
+      }
+
+      temp_string = t_string_list.join(value_seperator)      
+    }
+
+    if(value_in_double_quotes) {
+      return '"' + temp_string + '"'
+    } else {
+      return temp_string
+    }
+    
+  }
+    
+  generate_protocol_rules() {
+    if(this.dynamicForm.value.hasOwnProperty("protocol") && this.dynamicForm.value["protocol"].length>0){
+      let temp_rule_string = this.get_common_part_string()
+      let meta_keyword_string = this.get_meta_keyword_string()
+      let end_string = ';)'
+      
+
+      let proto_opt_selected_dict:any = {}
+
+      for(let proto_option of this.dynamicForm.value["protocol"]) {
+        let final_rule = ''
+        let proto_opt_selected = proto_option[0]
+        let proto_opt_content = proto_option[1]
+        let proto_opt_cont_mod = proto_option[2]
+        let proto_opt_cont_mod_obj = proto_option[3]
+        let negate = proto_option[4]
+
+        let cm_string = this.get_protocol_string(proto_opt_selected, proto_opt_content, negate)
+
+        if(proto_opt_cont_mod !== undefined) {
+          cm_string += ';' + this.get_string(proto_opt_cont_mod, proto_opt_cont_mod_obj)
+        }
+
+        if(meta_keyword_string === '') {
+          final_rule = temp_rule_string + cm_string + end_string
+          this.final_suricata_rule_list.push(final_rule)
+        } else {
+          final_rule = temp_rule_string + cm_string +';' + meta_keyword_string + end_string
+          this.final_suricata_rule_list.push(final_rule)
+        }
 
       }
-      console.log(this.final_suricata_rule_check_status_list)
     }
-  }
 
-    
-     
+  }
   
 
 
