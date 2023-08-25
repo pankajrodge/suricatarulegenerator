@@ -16,11 +16,12 @@ export class AppComponent  {
   check_url: string = ''
 
 
-  protocol_list = ["HTTP", "DNS", "TCP"]
+  protocol_list = ["HTTP", "DNS", "TCP", "ICMP"]
   protocol_dict:any ={
     "http": "../assets/http.json",
     "dns": "../assets/dns.json",
     "tcp": "../assets/tcp.json",
+    "icmp": "../assets/icmp.json"
   }
 
   constructor(private sharedService: SharedService) {}
