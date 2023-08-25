@@ -1265,6 +1265,13 @@ get_user_selection_table_headers(proto_param:string): string[] {
   return []
 }
 
+deepCopy(obj: any): any {
+  if(obj === undefined) {
+    return undefined
+  }
+  return JSON.parse(JSON.stringify(obj));
+}
+
   add_user_selected_protocol_details(proto_param:any) {
 
     this.protocol_content_dict[proto_param]["show_error_message"] = false
@@ -1282,8 +1289,8 @@ get_user_selection_table_headers(proto_param:string): string[] {
     let protocol_content_selected = this.protocol_content_dict[proto_param].selected
     let negate = this.protocol_content_dict[proto_param].negate
     let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
-    let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
-    let protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
+    let protocol_content_value = this.deepCopy(this.protocol_content_object_dict[proto_param][protocol_content_selected])
+    let protocol_modifier_value = this.deepCopy(this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected])
 
     //console.log(proto_param, protocol_content_selected, protocol_content_value, negate, protocol_modifier_selected, protocol_modifier_value)
     
@@ -1772,7 +1779,7 @@ add_user_selected_meta_keyword(field:any) {
     }
 
     if(is_no_content) {
-      temp_string = key + key_value_separator + this.get_value_string(key, value, value_in_double_quotes)
+      temp_string = key + key_value_separator + negate_string + this.get_value_string(key, value, value_in_double_quotes)
     } else {
       if(is_sticky_buffer){
         temp_string = key + ';' + "content:" + negate_string + this.get_value_string(key, value, value_in_double_quotes)
@@ -1905,7 +1912,7 @@ add_user_selected_meta_keyword(field:any) {
     let temp_string = ''
     let value_seperator = ','
 
-    if(this.json_keyword[key]["value_seperator"]) {
+    if(this.json_keyword[key].hasOwnProperty("value_seperator")) {
       value_seperator = this.json_keyword[key]["value_seperator"]
     }
 

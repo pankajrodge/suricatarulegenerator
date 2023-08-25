@@ -570,18 +570,22 @@
         "show_negate_option": true
     },
     "tcp.mss": {
-        "html_tag_type": "dropdown_with_text",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "no_content": true,
         "value_in_double_quotes": false,
-        "order_name": ["selected", "text"],
+        "order": ["drop_down", "text"],
+        "value_seperator":"",
+        "order_name": ["operator", "mss_value"],
         "drop_down_dict": {
+            "operator": {
                 "=": "", 
                 ">": ">",
                 "<":"<",
-                "range_limit": ""
-
+                 "range_limit":""
+                }
         }
     },
+
     "tcp.hdr": {
         "html_tag_type": "text",
         "supported_content_modifier": ["offset", "byte_test"],
