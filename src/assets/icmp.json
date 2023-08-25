@@ -1,0 +1,17 @@
+{
+    "common": {
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
+    },
+    "protocol": [
+        {
+            "icmp": {
+                "supported_options": ["itype", "icode", "icmp_id", "icmp_seq", "icmpv6.mtu"],
+                "supported_options_table_headers":["ICMP Option", "Select Options", "Add Content Modifier", "Description"],
+                "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+                "user_selection_table_headers":["ICMP Option", "Content Value", "Content Modifier", "Content Condition", "Negate Content"]
+            }
+        }
+    ]
+}
+
+

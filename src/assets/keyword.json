@@ -592,9 +592,92 @@
         "sticky_buffer": true
     },
 
+    "udp.hdr": {
+        "html_tag_type": "text",
+        "supported_content_modifier": ["offset", "depth"],
+        "sticky_buffer": true
+    },
+
     "relative":{
         "html_tag_type": "check_box",
         "lable_descrption": "Relative"
+    },
+
+    "itype": {
+        "html_tag_type": "ordered_tag_mandatory_optional",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "order": ["drop_down", "text"],
+        "value_seperator":"",
+        "show_negate_option": false,
+        "order_name": ["operator", "icmp_type"],
+        "supported_content_modifier": ["icmp_id", "icmp_seq"],
+        "drop_down_dict": {
+            "operator": {
+                ">": ">",
+                "<":"<",
+                 "range":""
+                }
+        }
+    },
+
+    "icode": {
+        "html_tag_type": "ordered_tag_mandatory_optional",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "order": ["drop_down", "text"],
+        "value_seperator":"",
+        "show_negate_option": false,
+        "order_name": ["operator", "icmp_type"],
+        "drop_down_dict": {
+            "operator": {
+                ">": ">",
+                "<":"<",
+                 "range":""
+                }
+        }
+    },
+
+    "icmp_id": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": false,
+        "supported_content_modifier": ["itype", "icmp_seq"]
+    },
+
+    "icmp_seq": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": false,
+        "supported_content_modifier": ["itype"]
+    },
+    "icmpv6.mtu": {
+        "html_tag_type": "ordered_tag_mandatory_optional",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "order": ["drop_down", "text"],
+        "value_seperator":"",
+        "show_negate_option": false,
+        "order_name": ["operator", "mtu"],
+        "drop_down_dict": {
+            "operator": {
+                "=": "",
+                ">": ">",
+                "<":"<",
+                "range_limit":""
+                }
+        }
+    },
+
+    "dns.opcode": {
+        "html_tag_type": "text",
+        "no_content": true,
+        "value_in_double_quotes": false,
+        "show_negate_option": true
     }
+
+
 
 }

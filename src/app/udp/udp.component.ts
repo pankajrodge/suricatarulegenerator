@@ -97,7 +97,9 @@ export class UdpComponent implements OnInit {
     this.dynamicForm.reset()
     this.protocol = ''
     this.url_http = ''
-
+    this.final_suricata_rule_list = []
+    this.final_suricata_rule_check_status_list = []
+    //this.user_selected_protocol_details ={}
     this.get_all_data("ngOnChanges")
 
     setTimeout(() => {
@@ -109,7 +111,9 @@ export class UdpComponent implements OnInit {
 
 
   ngOnInit() {
-    
+    this.final_suricata_rule_list = []
+    this.final_suricata_rule_check_status_list = []
+    //this.user_selected_protocol_details ={}
     this.get_all_data("ngOnInit") 
 
     setTimeout(() => {
@@ -155,7 +159,10 @@ export class UdpComponent implements OnInit {
       //this.createFormControlForCommonField()
 
       this.populate_common_object()
-      this.populate_content_modifier_object()
+      if(this.check_if_content_part_needs_to_display()) {
+        this.populate_content_modifier_object()
+      }
+     
       this.generateErrorMeesageDictForCommonField()
 
       //for protocol content
@@ -167,9 +174,11 @@ export class UdpComponent implements OnInit {
 
       this.populate_user_selected_protocol_details_dict()
 
-      this.populate_meta_keyword_object_dict()
-
-      this.populate_user_selected_meta_keyword()
+      if(this.check_if_meta_keyword_needs_to_display()) {
+        this.populate_meta_keyword_object_dict()
+        this.populate_user_selected_meta_keyword()
+      }
+      
     });
 
     setTimeout(() => {
@@ -254,6 +263,21 @@ export class UdpComponent implements OnInit {
     }
   }
 
+  check_if_content_part_needs_to_display(): boolean {
+    if (this.protocol_json_data["content"]) {
+      return true
+    }
+    return false
+  }
+
+  check_if_meta_keyword_needs_to_display(): boolean {
+    if (this.protocol_json_data["meta_keyword"]) {
+      return true
+    }
+    return false
+  }
+
+
   populate_content_modifier_object() {
     if (this.protocol_json_data["content"]['supported_options']) {
       for (let field of this.protocol_json_data["content"]['supported_options']) {
@@ -336,6 +360,7 @@ export class UdpComponent implements OnInit {
   }
 
   populate_user_selected_protocol_details_dict() {
+    this.user_selected_protocol_details = {}
     for(let proto_param of this.get_protocol_detail_list()){
       this.user_selected_protocol_details[proto_param] = {}
       this.user_selected_protocol_details[proto_param]["rows"] = []
@@ -522,23 +547,28 @@ export class UdpComponent implements OnInit {
       }
     }
 
-    if (this.protocol_json_data["content"]['supported_options']) {
-      for (let field of this.protocol_json_data["content"]['supported_options']) {
-          this.common_field_help_and_error_message[field] = {}
-          this.common_field_help_and_error_message[field]["showErrorMessage"] = false
-          this.common_field_help_and_error_message[field]["errorMessage"] = ''
-          this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+    if(this.check_if_content_part_needs_to_display()) {
+      if (this.protocol_json_data["content"]['supported_options']) {
+        for (let field of this.protocol_json_data["content"]['supported_options']) {
+            this.common_field_help_and_error_message[field] = {}
+            this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+            this.common_field_help_and_error_message[field]["errorMessage"] = ''
+            this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+        }
       }
     }
 
-    if (this.protocol_json_data["meta_keyword"]['supported_options']) {
-      for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
-          this.common_field_help_and_error_message[field] = {}
-          this.common_field_help_and_error_message[field]["showErrorMessage"] = false
-          this.common_field_help_and_error_message[field]["errorMessage"] = ''
-          this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+    if(this.check_if_meta_keyword_needs_to_display()) {
+      if (this.protocol_json_data["meta_keyword"]['supported_options']) {
+        for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
+            this.common_field_help_and_error_message[field] = {}
+            this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+            this.common_field_help_and_error_message[field]["errorMessage"] = ''
+            this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+        }
       }
     }
+
 
     if (this.protocol_json_data["protocol"]) {
       for(let proto_param of this.get_protocol_detail_list()) {
@@ -1290,7 +1320,11 @@ deepCopy(obj: any): any {
     let negate = this.protocol_content_dict[proto_param].negate
     let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
     let protocol_content_value = this.deepCopy(this.protocol_content_object_dict[proto_param][protocol_content_selected])
-    let protocol_modifier_value = this.deepCopy(this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected])
+    let protocol_modifier_value = undefined
+    if(protocol_modifier_selected !== undefined) {
+      protocol_modifier_value = this.deepCopy(this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected])
+    }
+     
 
     //console.log(proto_param, protocol_content_selected, protocol_content_value, negate, protocol_modifier_selected, protocol_modifier_value)
     
@@ -1304,10 +1338,10 @@ deepCopy(obj: any): any {
       } else {
         if(protocol_modifier_value === undefined) {
           this.user_selected_protocol_details[proto_param]["display"].push([protocol_content_selected, 
-            protocol_content_value, protocol_modifier_selected, '', negate])
+            JSON.stringify(protocol_content_value), protocol_modifier_selected, '', negate])
         } else {
           this.user_selected_protocol_details[proto_param]["display"].push([protocol_content_selected, 
-            protocol_content_value, protocol_modifier_selected, JSON.stringify(protocol_modifier_value), negate])
+            JSON.stringify(protocol_content_value), protocol_modifier_selected, JSON.stringify(protocol_modifier_value), negate])
         }
 
       }
@@ -1320,10 +1354,14 @@ validate_protocol_inputs(proto_param:string): boolean {
   let protocol_content_selected = this.protocol_content_dict[proto_param].selected
   let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
   let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
-  let protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
+  let protocol_modifier_value = undefined
+  if(protocol_modifier_selected !== undefined) {
+    protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
+  }
+   
 
-
-  if(!this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+  //if(!this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+  if(this.check_attribute_present_and_false_if_not(protocol_content_selected, "is_mandatory")) {
     if(protocol_content_value === undefined || protocol_content_value === '') {
       this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
       return true
@@ -1343,12 +1381,14 @@ validate_protocol_inputs(proto_param:string): boolean {
     }
 
   }
+  /*
   if(this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_content_selected]["is_mandatory"]) {
     if(protocol_content_value === undefined || protocol_content_value === '') {
       this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
       return true
     }
   }
+  */
   if(this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
     if( protocol_content_value=== undefined || protocol_content_value === '') {
       this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
@@ -1381,8 +1421,8 @@ validate_protocol_inputs(proto_param:string): boolean {
 
 
 if(protocol_modifier_selected !== undefined){
-
-    if(!this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
+    if(this.check_attribute_present_and_false_if_not(protocol_modifier_selected, "is_mandatory")) {
+    //if(!this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
       if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
         this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
         return true
@@ -1402,12 +1442,14 @@ if(protocol_modifier_selected !== undefined){
       }
 
     }
+    /*
     if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_modifier_selected]["is_mandatory"]) {
       if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
         this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
         return true
       }
     }
+    */
     if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
       if( protocol_modifier_value=== undefined || protocol_modifier_value === '') {
         this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
@@ -1450,7 +1492,7 @@ show_user_selected_table(proto_param:any): boolean {
 }
 
 do_show_negate_for_protocol(field:any): boolean {
-  return true
+  return this.check_attribute_present_and_true_if_not(field, "show_negate_option")
 }
 
 reset_protocol_object_dict(proto_param:any) {
@@ -1627,7 +1669,7 @@ add_user_selected_meta_keyword(field:any) {
       value_in_double_quotes = false
     }
 
-    if(this.json_keyword[key]["value_seperator"]) {
+    if(this.json_keyword[key].hasOwnProperty("value_seperator")) {
       value_seperator = this.json_keyword[key]["value_seperator"]
     }
 
@@ -1842,7 +1884,7 @@ add_user_selected_meta_keyword(field:any) {
 
   get_meta_keyword_string(): string {
     let meta_keyword_string = ''
-    if(this.dynamicForm.value.hasOwnProperty("meta_keyword") && this.dynamicForm.value["meta_keyword"].length>0) {
+    if(this.do_generate_rules_given_item("meta_keyword")) {
       let meta_temp_list = []
       for(let mk of this.dynamicForm.value["meta_keyword"]) {
         meta_temp_list.push(this.get_string(mk[0], mk[1]))
@@ -1852,8 +1894,19 @@ add_user_selected_meta_keyword(field:any) {
     return meta_keyword_string
   }  
 
+  do_generate_rules_given_item(item:string): boolean {
+    if(this.dynamicForm.value.hasOwnProperty(item)) {
+      if(this.dynamicForm.value[item] !== undefined) {
+        if(this.dynamicForm.value[item].length>0) {
+          return true
+        }
+      }
+    } 
+    return false
+  }
+
   generate_content_modifier_rules() {
-    if(this.dynamicForm.value.hasOwnProperty("content_modifier") && this.dynamicForm.value["content_modifier"].length>0){
+    if(this.do_generate_rules_given_item("content_modifier")){
       this.final_suricata_rule_list = []
       let temp_dict:any = {}
       let temp_rule_content_string_part:any = {}
@@ -2012,15 +2065,16 @@ add_user_selected_meta_keyword(field:any) {
     }
     
   }
-    
+  
   generate_protocol_rules() {
-    if(this.dynamicForm.value.hasOwnProperty("protocol") && this.dynamicForm.value["protocol"].length>0){
+    if(this.do_generate_rules_given_item("protocol")){
       let temp_rule_string = this.get_common_part_string()
       let meta_keyword_string = this.get_meta_keyword_string()
       let end_string = ';)'
       
 
       let proto_opt_selected_dict:any = {}
+      let proto_opt_selected_dict_cm_string_dict:any = {}
 
       for(let proto_option of this.dynamicForm.value["protocol"]) {
         let final_rule = ''
@@ -2033,6 +2087,18 @@ add_user_selected_meta_keyword(field:any) {
         let cm_string = this.get_protocol_string(proto_opt_selected, proto_opt_content, negate)
 
         if(proto_opt_cont_mod !== undefined) {
+          let proto_str = proto_opt_selected + '_' + negate.toString()
+          if(proto_opt_content !== undefined) {
+            proto_str += '_' + proto_opt_content
+          }
+          if(!proto_opt_selected_dict.hasOwnProperty(proto_str)){
+            proto_opt_selected_dict[proto_str] = []
+          }
+
+          if(!proto_opt_selected_dict_cm_string_dict.hasOwnProperty(proto_str)){
+            proto_opt_selected_dict_cm_string_dict[proto_str] = cm_string
+          }
+          proto_opt_selected_dict[proto_str].push(this.get_string(proto_opt_cont_mod, proto_opt_cont_mod_obj))
           cm_string += ';' + this.get_string(proto_opt_cont_mod, proto_opt_cont_mod_obj)
         }
 
@@ -2043,8 +2109,25 @@ add_user_selected_meta_keyword(field:any) {
           final_rule = temp_rule_string + cm_string +';' + meta_keyword_string + end_string
           this.final_suricata_rule_list.push(final_rule)
         }
-
       }
+
+      if(Object.keys(proto_opt_selected_dict).length > 0) {
+        for(let proto_str of Object.keys(proto_opt_selected_dict)) {
+          if(proto_opt_selected_dict[proto_str].length > 1) {
+            
+            let cm_string = proto_opt_selected_dict_cm_string_dict[proto_str] + ';' + proto_opt_selected_dict[proto_str].join(';')
+            if(meta_keyword_string === '') {
+              let final_rule = temp_rule_string + cm_string + end_string
+              this.final_suricata_rule_list.push(final_rule)
+            } else {
+              let final_rule = temp_rule_string + cm_string +';' + meta_keyword_string + end_string
+              this.final_suricata_rule_list.push(final_rule)
+            }
+          }
+        }
+      }
+
+
     }
 
   }

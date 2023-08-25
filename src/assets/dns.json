@@ -7,6 +7,17 @@
         "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract"],
         "form_controm_name": "content_modifier"
     },
+    "protocol": [
+        {
+            "dns_parameters": {
+                "supported_options": ["dns.opcode"],
+                "supported_options_table_headers":["DNS Option", "Select Options", "Add Content Modifier", "Description"],
+                "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+                "user_selection_table_headers":["DNS Option", "Content Value", "Content Modifier", "Content Condition", "Negate Content"]
+            }
+        }
+
+    ],
     "meta_keyword":{
         "supported_options": ["gid", "classtype"],
         "supported_options_table_headers":["Select Meta Keyword", "Specify value / Select Options", "Add"],

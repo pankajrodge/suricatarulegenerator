@@ -123,6 +123,7 @@
             <!-- Content Part Handling 
             content_match_text_box, content_dict.content_modifier_negate, content_dict.content_modifier_selected
             -->
+            <ng-container *ngIf="check_if_content_part_needs_to_display()">
             <section>
                 <ng-container *ngIf="protocol_json_data['content']">
                     <br><br>
@@ -271,6 +272,7 @@
                 </ng-container>
                 
             </section>
+            </ng-container>
             <!-- Content END HERE Part Handling -->
 
             <!-- Protocol Specific Part start here-->
