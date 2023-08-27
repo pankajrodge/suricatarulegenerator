@@ -19,57 +19,65 @@ import * as constants from '../../assets/help';
   styleUrls: ['./protocol.component.css']
 })
 export class ProtocolComponent implements OnInit {
-  @Input() check_protocol = '';
-  @Input() check_url = '';
-
-  //selectedOption!: string;
-
+  @Input() public check_protocol = '';
+  @Input() public check_url = '';
   server = "10.203.38.232:9000"
-
-  protocol=''
-  jsonData_keyword: any = [];
-  jsonData_http3: any = [];
-  url_keyword: string = '../assets/keyword.json';
-  url_http: string = ""
   dynamicForm!: FormGroup;
   specialCharacterPattern = /[!@#$%^&*(),?":{}|<>]/;
-  final_suricata_rule_list:any = []
-  final_suricata_rule_check_status_list:any = []
-  rule_check_status:string = ''
-  submit_button:string = ''
+  formVisible = false;
+  
+  url_keyword: string = '../assets/keyword.json';
+  url_valid_html_tag = '../assets/valid_html_tag.json'
+  url_valid_attributes = '../assets/valid_attributes.json'
 
-  //common part
-  common_part_error_message_dict:any = {}
+  protocol = ''
+  url_http = ''
 
+  public valid_html_tags:any = []
+  public valid_attributes:any = []
+  public json_keyword:any
+  public protocol_json_data:any
 
-  // CONTENT MODIFIER PART START HERE
-  //Below variables are use for content match field
-  showContentMatchTextBox:boolean = false
-  disabledContentMatchButton: boolean = false
-  showContentMatchTable: boolean = false
-  content_dict = {
-    "content_modifier_select": undefined,
-    "content_modifier_text_data": undefined,
-    "content_modifier_text_filter_data": undefined,
-    "content_modifier_check_box": undefined,
-    "content_modifier_order_tag_select1": undefined,
-    "content_modifier_order_tag_text_filter_data": undefined,
-    "content_modifier_order_tag_select2": undefined,
-    "content_modifier_negate": false
+  public common_field_help_and_error_message:any = {}
+
+  public content_modifier_error_message = "** Specify content Match string"
+  public content_modifier_showErrorMessage = false
+  public disabledContentMatchButton: boolean = false
+  public showContentMatchTextBox = false
+  public showContentMatchTable = false
+  public showcontentTable = false
+
+  public user_selected_content_modifier:any = {
+    "rows": [],
+    "display": []
   }
-  content_match_text_box:string ='';
+  public content_match_text_box:any = undefined
+  public content_dict = {
+    "content_modifier_negate": false,
+    "content_modifier_selected": undefined
+  }
+  public content_modifier_object:any = {}
 
-  // This dict is for handling content modifier part
-  global_content_modifier_dict:any = {}
-  content_modifier_error_count=0
-  content_modifier_error_message=""
-  content_modifier_showErrorMessage=false
 
-  global_content_modifier_final_dict:any = {}
-  content_modifier_order_tag_dict:any = {}
-  showcontentTable:boolean = false
+  public common_object_dict:any = {}
 
-// CONTENT MODIFIER PART END HERE
+
+  public protocol_content_dict:any = {}
+  public protocol_content_modifier_dict:any = {}
+  public protocol_content_object_dict:any = {}
+  public protocol_content_modifier_object_dict:any = {}
+
+  public user_selected_protocol_details:any = {}
+
+  public disable_meta_keyword:boolean = false
+  public show_meta_keyword_table:boolean = false
+  public meta_keyword_selected:any = undefined
+  public meta_keyword_object_dict:any = {}
+
+  public user_selected_meta_keyword:any = {}
+
+  public final_suricata_rule_list:any = []
+  public final_suricata_rule_check_status_list:any = []
 
   constructor(
     private jsonService: JsonReaderService,
@@ -80,486 +88,538 @@ export class ProtocolComponent implements OnInit {
     private location: Location,
     private router: Router
   ) {
-    //console.log("constructor")
+
     this.dynamicForm = this.formBuilder.group({});
-
   }
-
 
   ngOnChanges() {
+    this.dynamicForm.reset()
     this.protocol = ''
     this.url_http = ''
-    this.dynamicForm.reset()
-
-    this.sharedService.getData().subscribe(data => {
-      console.log("ngit service")
-      this.check_protocol = data.protocol.toLowerCase();
-      this.check_url = data.check_url;
-      console.log(this.check_protocol)
-      console.log(this.check_url)
-    });
-
-    this.protocol = this.check_protocol
-    this.url_http = this.check_url
-    // Refresh logic goes here
-    //console.log("ngchagne")
-    this.jsonService.getJsonData(this.url_keyword).subscribe((data1) => {
-      this.jsonData_keyword = data1;
-      //TODO have to create form control
-     //this.createFormControl();
-    
-    });
-
-    if(this.protocol != '' || this.protocol !== undefined) {
-    this.jsonService.getJsonData(this.url_http).subscribe((data2) => {
-      this.jsonData_http3 = data2;
-      this.createFormControlForCommonField()
-      //this.createAdditionalFormControl()
-      this.generateContentModifierOrdertagMandtoryDict()
-      //console.log(this.content_modifier_order_tag_dict)
-      this.generateErrorMeesageDictForCommonField()
-      this.generateGlobalHttpDict() 
-    });
-  }
-    //this.reloadComponent();
     this.final_suricata_rule_list = []
     this.final_suricata_rule_check_status_list = []
-    
+    //this.user_selected_protocol_details ={}
+    this.get_all_data("ngOnChanges")
+
+    setTimeout(() => {
+      this.formVisible = true; // Display the form after the delay
+    }, 0
+
+    )
   }
+
 
   ngOnInit() {
-    //console.log("ngit")
-    this.protocol = this.check_protocol.toLowerCase()
-    this.url_http = this.check_url
-    //console.log(this.protocol)
-    //console.log(this.url_http)
-
-/*
-    this.jsonService.getJsonData(this.url_keyword).subscribe((data1) => {
-      this.jsonData_keyword = data1;
-      //TODO have to create form control
-     //this.createFormControl();
-    
-    });
-    if(this.protocol != '' || this.protocol !== undefined) {
-    this.jsonService.getJsonData(this.url_http).subscribe((data2) => {
-      this.jsonData_http3 = data2;
-      this.createFormControlForCommonField()
-      //this.createAdditionalFormControl()
-      this.generateContentModifierOrdertagMandtoryDict()
-      //console.log(this.content_modifier_order_tag_dict)
-      this.generateErrorMeesageDictForCommonField()
-      this.generateGlobalHttpDict() 
-    });
-  }
-  */
-  }
-
-  onSubmit() {
-    console.log(this.dynamicForm.value)
-    this.final_suricata_rule_list  = []
+    this.final_suricata_rule_list = []
     this.final_suricata_rule_check_status_list = []
-    this.generate_suricata_rule()
-    this.checkRules()
+    //this.user_selected_protocol_details ={}
+    this.get_all_data("ngOnInit") 
+
+    setTimeout(() => {
+      this.formVisible = true; // Display the form after the delay
+    }, 0
+
+    )
+       
+  } 
+
+  get_all_data(text:string) {
+    //console.log(text)
+
+    if(this.valid_html_tags.length === 0) {
+      //console.log("skipping valid_html_tags")
+      this.http.get(this.url_valid_html_tag).subscribe((data1) => {
+        this.valid_html_tags = data1
+      });
+    }
+    
+    if(this.valid_attributes.length === 0) {
+      //console.log("skipping valid_attributes")
+      this.http.get(this.url_valid_attributes).subscribe((data2) => {
+        this.valid_attributes = data2
+      });
+    }
+    
+    if(this.json_keyword === undefined) {
+      this.http.get(this.url_keyword).subscribe((data3) => {
+        this.json_keyword = data3
+      });
+    }
+    
+    this.sharedService.getData().subscribe(data => {
+      this.check_protocol = data.protocol.toLowerCase();
+      this.check_url = data.check_url;
+    });
+
+    this.http.get(this.check_url).subscribe((data4) => {
+      this.protocol_json_data = data4
+
+      // for content modifier
+      //this.createFormControlForCommonField()
+
+      this.populate_common_object()
+      if(this.check_if_content_part_needs_to_display()) {
+        this.populate_content_modifier_object()
+      }
+     
+      this.generateErrorMeesageDictForCommonField()
+
+      //for protocol content
+      this.prepare_protocol_content_dict() 
+      this.prepare_protocol_content_modifier_dict()
+
+      //for protocol
+      this.populate_protocol_object_dict()
+
+      this.populate_user_selected_protocol_details_dict()
+
+      if(this.check_if_meta_keyword_needs_to_display()) {
+        this.populate_meta_keyword_object_dict()
+        this.populate_user_selected_meta_keyword()
+      }
+      
+    });
+
+    setTimeout(() => {
+      this.formVisible = true; // Display the form after the delay
+    }, 2000)
+
   }
 
   createFormControlForCommonField() {
-    if (this.jsonData_http3["common"]['supported_options']) {
-      for (let field of this.jsonData_http3["common"]['supported_options']) {
-        if (this.jsonData_keyword[field].html_tag_type == "text_with_checkbox" || this.jsonData_keyword[field].html_tag_type == "dropdown_with_text"
-        || this.jsonData_keyword[field].html_tag_type == "ordered_tag" || this.jsonData_keyword[field].html_tag_type == "check_box_list" || 
-        this.jsonData_keyword[field].html_tag_type == "ordered_tag_mandator_optional") {
-          this.dynamicForm.addControl(field, this.formBuilder.array([]));
+    /*
+    Create form control for common field
+    */
+   
+    if (this.protocol_json_data["common"]['supported_options']) {
+      for (let field of this.protocol_json_data["common"]['supported_options']) {
+        if(this.check_if_valid_html_tag_present(field)) {  //check if valid html tag is present
+          if(this.is_form_array(field)) { //check if we need to create form array control or simple form control
+            if(this.get_html_tag_type(field) === "ordered_tag_mandatory_optional"){
+              //this.dynamicForm.addControl(field, this.formBuilder.group({}));
+              let new_form_group = this.formBuilder.group({});
+              for(let oName of this.get_order_name_list(field)) {
+                new_form_group.addControl(oName, this.formBuilder.control(''));
+              }
+
+              this.dynamicForm.addControl(field, new_form_group);
+              
+            } else {
+              this.dynamicForm.addControl(field, this.formBuilder.array([]));  // for form array control
+            }
+            
+          } else {
+            this.dynamicForm.addControl(field, new FormControl('')); // for simple form  control
+          }
         } else {
-          this.dynamicForm.addControl(field, new FormControl(''));
+          // if valid tag is not specified, throu exception
+          throw new Error("Invalid tag specified : " + field);
         }
-      }
-    }
-    //console.log(this.content_modifier_order_tag_dict)
-  }
-
-  generateErrorMeesageDictForCommonField() {
-    if (this.jsonData_http3["common"]['supported_options']) {
-      for (let field of this.jsonData_http3["common"]['supported_options']) {
-        this.common_part_error_message_dict[field] = {}
-        this.common_part_error_message_dict[field]["showErrorMessage"] = false
-        this.common_part_error_message_dict[field]["errorMessage"] = ''
-
-        this.common_part_error_message_dict[field]["showHelpMessage"] = false
-      }
-    }
-  } 
-
-  createFormControl() {
-    for (let field in this.jsonData_keyword) {      
-      if (this.jsonData_keyword[field].html_tag_type == "text_with_checkbox" || this.jsonData_keyword[field].html_tag_type == "dropdown_with_text"
-      || this.jsonData_keyword[field].html_tag_type == "ordered_tag") {
-        this.dynamicForm.addControl(field, this.formBuilder.array([]));
-      } else {
-        this.dynamicForm.addControl(field, new FormControl(''));
-      }
       
-    }
+       }
+      }
+
   }
 
-  generateContentModifierOrdertagMandtoryDict() {
-    for (let option in this.jsonData_http3) {
-      for(let keyname in this.jsonData_keyword) {
-        if (this.jsonData_keyword[keyname].html_tag_type == "ordered_tag_mandator_optional") {
-          if(! this.content_modifier_order_tag_dict[option]) {
-            this.content_modifier_order_tag_dict[option] = {}
-            this.content_modifier_order_tag_dict[option][keyname] = {}
-          } else if (!this.content_modifier_order_tag_dict[option][keyname]) {
-            this.content_modifier_order_tag_dict[option][keyname] = {}
+
+  populate_meta_keyword_object_dict() {
+    if (this.protocol_json_data["meta_keyword"]['supported_options']) {
+      for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
+        if(this.get_html_tag_type(field) == 'text') {
+          this.meta_keyword_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box') {
+          this.meta_keyword_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'na') {
+          this.meta_keyword_object_dict[field]= undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box_list') {
+          this.meta_keyword_object_dict[field] = []
+        }
+        if(this.get_html_tag_type(field) == 'drop_down') {
+          this.meta_keyword_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'ordered_tag_mandatory_optional') {
+          this.meta_keyword_object_dict[field]={}
+          for(let oName of this.get_order_name_list(field)) {
+            if(this.get_order_name_html_type(field, oName) == 'text') {
+              this.meta_keyword_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'drop_down') {
+              this.meta_keyword_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box') {
+              this.meta_keyword_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.meta_keyword_object_dict[field][oName] = []
+            }
           }
           
-          for(let k of this.jsonData_keyword[keyname]["order_name"]) {
-            this.content_modifier_order_tag_dict[option][keyname][k] = undefined
-          }
-        }
-      }
-   }
-  }
-
-  clearContentModifierOrdertagMandtoryDict() {
-    for(let m in this.content_modifier_order_tag_dict) {
-      for(let k in this.content_modifier_order_tag_dict[m]) {
-        for (let l in this.content_modifier_order_tag_dict[m][k]) {
-          this.content_modifier_order_tag_dict[m][k][l] = undefined
         }
       }
     }
-
   }
 
-  /*
-  createAdditionalFormControl() {
-    this.dynamicForm.addControl("content_match_text", new FormControl(''));
-  }
-  */
-
-  addContentMatch() {
-    this.showContentMatchTextBox = true
-    this.disabledContentMatchButton = true
-    this.showContentMatchTable = true
-    this.showcontentTable = true
-  }
-
-  validate_ordered_tag_mandator_optional(key:string, dict_name:string) {
-    let temp_error_msg = '** Please specify mandatory option '
-    let error_count = 0
-    this.content_modifier_showErrorMessage = false
-    if(this.jsonData_keyword[key]['mandatory_option']){
-      for(let o of this.jsonData_keyword[key]['mandatory_option']) {
-        if(this.content_modifier_order_tag_dict[dict_name][key][o] === '' || 
-        this.content_modifier_order_tag_dict[dict_name][key][o] === undefined) {
-          temp_error_msg = temp_error_msg  + o + " "
-          error_count +=1
-        }
-      }
-    }
-
-    if(error_count>0){
-      this.content_modifier_error_message = temp_error_msg
-      this.content_modifier_showErrorMessage = true
-    }
-
-  }
-
-  addContentMatchData(table_id:any, content_match:any, negate_match:any, data1:any, data2:any, data3:any, data4:any, data5:any, data6:any, data7:any) {
-    //this.showcontentTable = true
-    //console.log("Adding")
-    //console.log(content_match, data1, data2, data3, data4, data5, data6, data7)
-    //console.log(data7)
-    //console.log(this.content_modifier_order_tag_dict)
-    this.content_modifier_showErrorMessage = false
-    let temp_string = ''
-    let temp_data7 = undefined
-
-    if(content_match=="" || content_match === undefined) {
-      this.content_modifier_error_message = "** Specify content Match string"
-      this.content_modifier_showErrorMessage = true
-      
-    } else if(data1 === undefined || data1 === '') {
-      //this.content_modifier_error_message = "** Specify content Match Criteria"
-      //this.content_modifier_showErrorMessage = true
-    } else  if (data1 !== undefined && this.jsonData_keyword[data1].is_mandatory && (data2 === undefined  || data2 == '')) {
-      this.content_modifier_error_message = "** Specify the value for " + data1
-      this.content_modifier_showErrorMessage = true
-    }else {
-      if (this.jsonData_keyword[data1].html_tag_type =='ordered_tag_mandator_optional') {
-        this.validate_ordered_tag_mandator_optional(data1, "content")
-        temp_data7 = JSON.parse(JSON.stringify(data7["content"][data1]));
-      }
-    }
-
-    if(!this.content_modifier_showErrorMessage) {
-    /*
-      data1 = matching criteria e.g. nocase, depth 
-      data2 = value assiciated with matching criteria. if data2 is undefined then it is a single value like nocase, startwith
-      data3 = checkbox value relative
-      data4 = order_tag no_byts, operator
-      data5 = value
-      data6 = operator
-
-    */
-
-    if(!(this.global_content_modifier_dict[content_match])){
-      this.global_content_modifier_dict[content_match] = {}
-    }
-
-
-
-    
-    if(!(this.global_content_modifier_dict[content_match]['original_data_received'])) {
-      this.global_content_modifier_dict[content_match]['original_data_received'] = []
-    }
-    
-    this.global_content_modifier_dict[content_match]['original_data_received'].push([data1, data2, data3, data4, data5, data6, temp_data7, negate_match])
-    //console.log(this.global_content_modifier_dict)
-
-    //console.log(this.global_content_modifier_dict[content_match]['rows_to_display'])
-    this.processContentModifierDictRecursively(table_id)
-    this.clearContentMatchDict()
-    this.clearContentModifierOrdertagMandtoryDict()
-    //console.log(this.content_modifier_order_tag_dict)
-    this.showcontentTable = this.doShowContentTable()
-    
-
-  }
-  }
-
-
-  processContentModifierDictRecursively(table_id:any) {
-    this.global_content_modifier_final_dict = {}
-    let key_value_seperator = ":"
-    for(let row in this.global_content_modifier_dict) {
-      this.global_content_modifier_dict[row]['rows_to_display'] = []
-
-      if(!(this.global_content_modifier_final_dict[row])){
-        this.global_content_modifier_final_dict[row] = {}
-      }
-  
-
-      //console.log(row)
-      for (let r of this.global_content_modifier_dict[row]['original_data_received']) {
-        let match_criteria = r[0]
-        let value_of_match_criteria = r[1]
-        let is_relative = r[2]
-        let order_tag_or_operator = r[3]
-        let order_tag_value = r[4]
-        let operator = r[5]
-        let temp_order_tag = r[6]
-        let negate_match = r[7]
-
-        this.global_content_modifier_final_dict[row]["negate_match"] = negate_match
-
-
-
-        if (match_criteria ===undefined && value_of_match_criteria === undefined && is_relative === undefined 
-          && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined) {
-            //single type value is assigned.
-            this.global_content_modifier_final_dict[row][match_criteria] = true
-            //console.log(temp_string)
-            this.global_content_modifier_dict[row]['rows_to_display'].push([row, "", negate_match])
-          }
-
-          if (match_criteria !==undefined && value_of_match_criteria === undefined && is_relative === undefined 
-            && order_tag_or_operator !== undefined && order_tag_value === undefined && operator === undefined) {
-              //single type value is assigned in case of dropdown with text
-              this.global_content_modifier_final_dict[row][match_criteria] = order_tag_or_operator
-              //console.log(temp_string)
-              this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+order_tag_or_operator, negate_match])
-            }
-  
-
-        if (match_criteria !==undefined && value_of_match_criteria === undefined && is_relative === undefined 
-          && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined && this.jsonData_keyword[match_criteria].html_tag_type !='ordered_tag_mandator_optional') {
-            //single type value is assigned.
-              this.global_content_modifier_final_dict[row][match_criteria] = true
-            //console.log(temp_string)
-            this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria, negate_match])
-          }
-
-          if (match_criteria !==undefined && value_of_match_criteria !== undefined && is_relative === undefined 
-            && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined) {
-              // match criteria and its value is passed
-              this.global_content_modifier_final_dict[row][match_criteria] = value_of_match_criteria
-              this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+value_of_match_criteria, negate_match])
-            }
-        
-          if (match_criteria !==undefined && value_of_match_criteria !== undefined && is_relative !== undefined 
-            && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined) {
-              // match criteria and its value is passed and it is relateive
-              if(is_relative == 'relative') {
-                //this.global_content_modifier_final_dict[row][match_criteria] = [value_of_match_criteria, 'relative']
-                this.global_content_modifier_final_dict[row][match_criteria] = value_of_match_criteria + ",relative"
-                this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+value_of_match_criteria+'relative'], negate_match)
-              }
-            }
-
-
-          if (match_criteria !==undefined && value_of_match_criteria !== undefined && is_relative === undefined 
-            && order_tag_or_operator !== undefined && order_tag_value === undefined && operator === undefined) {
-              // match criteria and its value is passed & operator is used for condition check
-              if(order_tag_or_operator === 'range') {
-                let myList: string[] = value_of_match_criteria.split('-')
-                this.global_content_modifier_final_dict[row][match_criteria] = myList[0] + "<>" + myList[1]
-                this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+myList[0] + "<>" + myList[1], negate_match])
-              } else {
-                if(this.jsonData_keyword[match_criteria]["key_value_seperator"]) {
-                  this.global_content_modifier_final_dict[row][match_criteria] = order_tag_or_operator + this.jsonData_keyword[match_criteria]["key_value_seperator"] + value_of_match_criteria
-                  this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+ order_tag_or_operator + this.jsonData_keyword[match_criteria]["key_value_seperator"] + value_of_match_criteria, negate_match])
-                } else {
-                  this.global_content_modifier_final_dict[row][match_criteria] = order_tag_or_operator + value_of_match_criteria
-                  this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+ order_tag_or_operator + value_of_match_criteria, negate_match])
-                }
-                
-              }
-            }
-
-          if (match_criteria !==undefined && value_of_match_criteria === undefined && is_relative === undefined 
-            && order_tag_or_operator === undefined && order_tag_value === undefined && operator === undefined 
-            && this.jsonData_keyword[match_criteria].html_tag_type =='ordered_tag_mandator_optional') {
-              let temp_string_list: string[] = []
-              let value_seperator = ","
-              if (this.jsonData_keyword[match_criteria]["value_seperator"]) {
-                value_seperator = this.jsonData_keyword[match_criteria]["value_seperator"]
-              }
-              // match criteria and doesnot contain value & contain the order tag value
-              for(let orderName of this.jsonData_keyword[match_criteria]['order_name']) {
-                if (temp_order_tag[orderName] !== undefined && temp_order_tag[orderName] != '') {
-                  if(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"]) {
-                    if(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"][orderName]) {
-                      temp_string_list.push(this.jsonData_keyword[match_criteria]["save_user_input_with_prefix_as"][orderName] + temp_order_tag[orderName])
-                    } else {
-                      temp_string_list.push(temp_order_tag[orderName])
-                    }
-                  } else {
-                    temp_string_list.push(temp_order_tag[orderName])
-                  }
-                  
-                }
-              }
-
-              this.global_content_modifier_final_dict[row][match_criteria] = temp_string_list.join(value_seperator)
-              this.global_content_modifier_dict[row]['rows_to_display'].push([row, match_criteria+':'+temp_string_list.join(value_seperator), negate_match])
-              }
-
-
-      }
-    }
-    console.log(this.global_content_modifier_dict)
-    this.updateTheFormControl(table_id)
-  }
-
-
-  removeFormControl(name:string) {
-    if(this.dynamicForm.contains(name)) {
-      this.dynamicForm.removeControl(name)
-    }
-  }
-    
-
-  updateTheFormControl(name:string) {
-    if(this.dynamicForm.contains("content_modifier")) {
-      this.dynamicForm.removeControl("content_modifier")
-    }
-    
-    let temp_list: string[] = []
-    if(name=='content') {
-      //this.global_content_modifier_final_dict
-      for (let k in this.global_content_modifier_final_dict) {
-        if(this.global_content_modifier_final_dict[k]["negate_match"]) {
-          temp_list.push("content:"+ "!" + this.normalizeTheContentString(k))
-        } else {
-          temp_list.push("content:"+ this.normalizeTheContentString(k))
-        }
-        
-        for(let cn_l of this.jsonData_http3["content"]["supported_options"]) {
-          if(this.global_content_modifier_final_dict[k][cn_l]) {
-            if(this.jsonData_keyword[cn_l].html_tag_type=='na' && this.global_content_modifier_final_dict[k][cn_l] 
-            && this.global_content_modifier_final_dict[k][cn_l]!==undefined && this.global_content_modifier_final_dict[k][cn_l] != '') {
-              temp_list.push(cn_l)
-            } else {
-              temp_list.push(cn_l + ':' + this.global_content_modifier_final_dict[k][cn_l] )
-            }
-          }
-        }
-
-      }
-    if(temp_list.length>0) {
-      this.setValueInFormControl("content_modifier", temp_list)
-    }
-    
-    }
-  }
-
-  doShowContentTable(): boolean{
-    const keys = Object.keys(this.global_content_modifier_dict);
-    const length = keys.length;
-    if (length > 0) {
-      for (let k of keys) {
-        if(this.global_content_modifier_dict[k]['rows_to_display'] && this.global_content_modifier_dict[k]['rows_to_display'].length > 0) {
-          return true
-        }
-      }
+  check_if_content_part_needs_to_display(): boolean {
+    if (this.protocol_json_data["content"]) {
+      return true
     }
     return false
   }
 
-  removeElementAt(content_match:any, index:any, dict_name:any) {
-    console.log(content_match,index)
-    this.global_content_modifier_dict[content_match]["original_data_received"].splice(index, 1)
-    if(this.global_content_modifier_dict[content_match]["original_data_received"].length==0) {
-      delete this.global_content_modifier_dict[content_match]
+  check_if_meta_keyword_needs_to_display(): boolean {
+    if (this.protocol_json_data["meta_keyword"]) {
+      return true
     }
-    this.processContentModifierDictRecursively(dict_name)
-  }
-
-  clearContentMatchDict() {
-    this.content_dict["content_modifier_select"] = undefined
-    this.content_dict["content_modifier_text_data"] = undefined
-    this.content_dict["content_modifier_text_filter_data"] = undefined
-    this.content_dict["content_modifier_check_box"] = undefined
-    this.content_dict["content_modifier_order_tag_select1"] = undefined
-    this.content_dict["content_modifier_order_tag_text_filter_data"] = undefined
-    this.content_dict["content_modifier_order_tag_select2"] = undefined
-    this.content_dict.content_modifier_negate = false
-  }
-
-  clearContentMatchDict2() {
-    this.content_dict["content_modifier_text_data"] = undefined
-    this.content_dict["content_modifier_text_filter_data"] = undefined
-    this.content_dict["content_modifier_check_box"] = undefined
-    this.content_dict["content_modifier_order_tag_select1"] = undefined
-    this.content_dict["content_modifier_order_tag_text_filter_data"] = undefined
-    this.content_dict["content_modifier_order_tag_select2"] = undefined
-  }
-
-  getDictionaryKeys(dictionary: { [key: string]: any }): string[] {
-    return Object.keys(dictionary);
+    return false
   }
 
 
+  populate_content_modifier_object() {
+    if (this.protocol_json_data["content"]['supported_options']) {
+      for (let field of this.protocol_json_data["content"]['supported_options']) {
+        if(this.get_html_tag_type(field) == 'text') {
+          this.content_modifier_object[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box') {
+          this.content_modifier_object[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'na') {
+          this.content_modifier_object[field]= undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box_list') {
+          this.content_modifier_object[field] = []
+        }
+        if(this.get_html_tag_type(field) == 'drop_down') {
+          this.content_modifier_object[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'ordered_tag_mandatory_optional') {
+          this.content_modifier_object[field]={}
+          for(let oName of this.get_order_name_list(field)) {
+            if(this.get_order_name_html_type(field, oName) == 'text') {
+              this.content_modifier_object[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'drop_down') {
+              this.content_modifier_object[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box') {
+              this.content_modifier_object[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.content_modifier_object[field][oName] = []
+            }
+          }
+          
+        }
+      }
+    }
+  }
 
+
+  populate_common_object() {
+    if (this.protocol_json_data["common"]['supported_options']) {
+      for (let field of this.protocol_json_data["common"]['supported_options']) {
+        if(this.get_html_tag_type(field) == 'text') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'na') {
+          this.common_object_dict[field]= undefined
+        }
+        if(this.get_html_tag_type(field) == 'check_box_list') {
+          this.common_object_dict[field] = []
+        }
+        if(this.get_html_tag_type(field) == 'drop_down') {
+          this.common_object_dict[field] = undefined
+        }
+        if(this.get_html_tag_type(field) == 'ordered_tag_mandatory_optional') {
+          this.common_object_dict[field]={}
+          for(let oName of this.get_order_name_list(field)) {
+            if(this.get_order_name_html_type(field, oName) == 'text') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'drop_down') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box') {
+              this.common_object_dict[field][oName] = undefined
+            }
+            if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+              this.common_object_dict[field][oName] = []
+            }
+          }
+          
+        }
+      }
+    }
+  }
+
+  populate_user_selected_protocol_details_dict() {
+    this.user_selected_protocol_details = {}
+    for(let proto_param of this.get_protocol_detail_list()){
+      this.user_selected_protocol_details[proto_param] = {}
+      this.user_selected_protocol_details[proto_param]["rows"] = []
+      this.user_selected_protocol_details[proto_param]["display"] = []
+    }
+  }
+
+  populate_user_selected_meta_keyword() {
+    this.user_selected_meta_keyword["rows"] = []
+    this.user_selected_meta_keyword["display"] = []
+  }
+
+  populate_protocol_object_dict() {
+    for(let proto_param of this.get_protocol_detail_list()){
+      if(!this.protocol_content_object_dict[proto_param]) {
+        this.protocol_content_object_dict[proto_param] = {}
+      }
   
-  setValueInFormControl(controlName:any, newValue:any) {
-    if(!this.dynamicForm.get(controlName)) {
-      this.dynamicForm.addControl(controlName, new FormControl(''));
+      for(let supp_option of this.get_protocol_supported_options(proto_param)) {
+        if(['text', 'check_box', 'na', 'drop_down'].includes(this.get_html_tag_type(supp_option))) {
+          if(! this.protocol_content_object_dict[proto_param][supp_option]) {
+            this.protocol_content_object_dict[proto_param][supp_option] = undefined
+          }
+          
+        }
+        if(this.get_html_tag_type(supp_option) == 'check_box_list') {
+          if(! this.protocol_content_object_dict[proto_param][supp_option]) {
+            this.protocol_content_object_dict[proto_param][supp_option] = []
+          }
+        }
+
+        if(this.get_html_tag_type(supp_option) == 'ordered_tag_mandatory_optional') {
+          if(! this.protocol_content_object_dict[proto_param][supp_option]) {
+            this.protocol_content_object_dict[proto_param][supp_option]={}
+          }
+          
+          for(let oName of this.get_order_name_list(supp_option)) {
+            if(this.get_order_name_html_type(supp_option, oName) == 'text') {
+              this.protocol_content_object_dict[proto_param][supp_option][oName] = undefined
+            }
+            if(this.get_order_name_html_type(supp_option, oName) == 'drop_down') {
+              this.protocol_content_object_dict[proto_param][supp_option][oName] = undefined
+            }
+            if(this.get_order_name_html_type(supp_option, oName) == 'check_box') {
+              this.protocol_content_object_dict[proto_param][supp_option][oName] = undefined
+            }
+            if(this.get_order_name_html_type(supp_option, oName) == 'check_box_list') {
+              this.protocol_content_object_dict[proto_param][supp_option][oName] = []
+            }
+          }
+        }
+        
+        if(this.check_if_supported_content_modifier_present(supp_option)) {
+          if(!this.protocol_content_modifier_object_dict[proto_param]) {
+            this.protocol_content_modifier_object_dict[proto_param] = {}
+          }
+          for(let supp_cont_mod of this.get_content_modifier_list_for_protocol_param(supp_option)) {
+            if(['text', 'check_box', 'na', 'drop_down'].includes(this.get_html_tag_type(supp_cont_mod))) {
+              if(!this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod]) {
+                this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod] = undefined
+              }
+              
+            }
+            if(this.get_html_tag_type(supp_cont_mod) == 'check_box_list') {
+              if(!this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod]) {
+                this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod] = []
+              }
+            }
+
+            if(this.get_html_tag_type(supp_cont_mod) == 'ordered_tag_mandatory_optional') {
+              if(!this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod]) {
+                this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod]={}
+                for(let oName of this.get_order_name_list(supp_cont_mod)) {
+                  if(this.get_order_name_html_type(supp_cont_mod, oName) == 'text') {
+                    this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = undefined
+                  }
+                  if(this.get_order_name_html_type(supp_cont_mod, oName) == 'drop_down') {
+                    this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = undefined
+                  }
+                  if(this.get_order_name_html_type(supp_cont_mod, oName) == 'check_box') {
+                    this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = undefined
+                  }
+                  if(this.get_order_name_html_type(supp_cont_mod, oName) == 'check_box_list') {
+                    this.protocol_content_modifier_object_dict[proto_param][supp_cont_mod][oName] = []
+                  }
+                }
+              }
+
+            }
+
+          }
+        }
+      }
+
+    }
+  }
+
+  check_if_supported_content_modifier_present(field:string) {
+    return this.json_keyword[field].hasOwnProperty("supported_content_modifier")
+  }
+
+  get_content_modifier_list_for_protocol_param(field:string) {
+    return this.json_keyword[field]["supported_content_modifier"]
+  }
+
+
+
+
+
+  reset_content_modifier(field:any) {
+    if(this.get_html_tag_type(field) == 'text') {
+      this.content_modifier_object[field] = undefined
+    }
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.content_modifier_object[field] = undefined
+    }
+    if(this.get_html_tag_type(field) == 'na') {
+      this.content_modifier_object[field]= undefined
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      this.content_modifier_object[field] = []
+    }
+    if(this.get_html_tag_type(field) == 'drop_down') {
+      this.content_modifier_object[field] = undefined
+    }
+    if(this.get_html_tag_type(field) == 'ordered_tag_mandatory_optional') {
+      this.content_modifier_object[field]={}
+    }
+
+  }
+
+  get_content_modifier_ng_model(field:string, oName=''): any {
+    if(oName === undefined || oName =='') {
+      //return "this.content_modifier_object[" + field + "]"
+      return this.content_modifier_object[field]
     } 
-    const formControl = this.dynamicForm.get(controlName) as FormControl;
-    formControl.setValue(newValue);
+    //return "this.content_modifier_object[" + field + "][" + oName + "]"
+    return this.content_modifier_object[field][oName]
+  }
+
+  check_if_valid_html_tag_present(field:string): boolean {
+    let t_html_tag = this.json_keyword[field]["html_tag_type"]
+    if(this.valid_html_tags.hasOwnProperty(t_html_tag)) {
+      return true
+    }
+    return false
+  }
+
+
+  onSubmit() {
+    /*
+    this.generateErrorMeesageDictForCommonField()
+    if(this.dynamicForm.contains("common_field")) {
+      this.dynamicForm.removeControl("common_field")
+    }
+    this.dynamicForm.addControl('common_field', this.formBuilder.control(this.common_object_dict))
+    */
     
+    if(!this.validate_common_part()) {
+      //console.log("input correct")
+      if(this.dynamicForm.contains("common_field")) {
+        this.dynamicForm.removeControl("common_field")
+      }
+      this.dynamicForm.addControl('common_field', this.formBuilder.control(this.common_object_dict))
+    } else {
+      //console.log("input incorrect")
+    }
+
+    console.log(this.dynamicForm.value)
+    this.generate_suricata_rules()
+    
+    this.checkRules()
+
   }
 
-  getIndexOfOrderTag(key:string, value:string) {
-    return this.jsonData_keyword[key]["order_name"].indexOf(value)
+  generateErrorMeesageDictForCommonField() {
+    
+    if (this.protocol_json_data["common"]['supported_options']) {
+      for (let field of this.protocol_json_data["common"]['supported_options']) {
+        this.common_field_help_and_error_message[field] = {}
+        this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+        this.common_field_help_and_error_message[field]["errorMessage"] = ''
+        this.common_field_help_and_error_message[field]["showHelpMessage"] = false        
+      }
+    }
+
+    if(this.check_if_content_part_needs_to_display()) {
+      if (this.protocol_json_data["content"]['supported_options']) {
+        for (let field of this.protocol_json_data["content"]['supported_options']) {
+            this.common_field_help_and_error_message[field] = {}
+            this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+            this.common_field_help_and_error_message[field]["errorMessage"] = ''
+            this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+        }
+      }
+    }
+
+    if(this.check_if_meta_keyword_needs_to_display()) {
+      if (this.protocol_json_data["meta_keyword"]['supported_options']) {
+        for (let field of this.protocol_json_data["meta_keyword"]['supported_options']) {
+            this.common_field_help_and_error_message[field] = {}
+            this.common_field_help_and_error_message[field]["showErrorMessage"] = false
+            this.common_field_help_and_error_message[field]["errorMessage"] = ''
+            this.common_field_help_and_error_message[field]["showHelpMessage"] = false
+        }
+      }
+    }
+
+
+    if (this.protocol_json_data["protocol"]) {
+      for(let proto_param of this.get_protocol_detail_list()) {
+        for(let k of this.get_protocol_supported_options(proto_param)) {
+            this.common_field_help_and_error_message[k] = {}
+            this.common_field_help_and_error_message[k]["showHelpMessage"] = false
+  
+          //check_if_supported_content_modifier_present
+        //get_content_modifier_list_for_protocol_param
+          if(this.check_if_supported_content_modifier_present(k)) {
+            for(let f of this.get_content_modifier_list_for_protocol_param(k)) {
+ 
+                this.common_field_help_and_error_message[f] = {}
+                this.common_field_help_and_error_message[f]["showHelpMessage"] = false
+         
+            }
+          }
+
+        }
+
+      }
+    }
+
+
+  } 
+
+  toggleHelp(field: string): void {
+    for (let f in this.common_field_help_and_error_message) { 
+      if(f != field) {
+        this.common_field_help_and_error_message[f]["showHelpMessage"] = false
+      }
+    }
+    if (field != 'all') {
+      this.common_field_help_and_error_message[field]["showHelpMessage"] = !this.common_field_help_and_error_message[field]["showHelpMessage"]
+    }
   }
 
-  handleCheckboxChange(event: any, formarrayname:any) {
+get_help_string(key: string) {
+  const t_new_key = key.replace(':', '_').replace('.','_') as keyof typeof constants;
+  if(constants[t_new_key]) {
+    return constants[t_new_key]
+  }
+  return ""
+}
+
+handleCheckboxChange(event: any, formarrayname:any) {
+  if(this.json_keyword[formarrayname]["html_tag_type"] === "check_box") {
+    this.setValueInFormControl(formarrayname, event.target.checked)
+  } 
+
+  if(this.json_keyword[formarrayname]["html_tag_type"] === "check_box_list") {
     const checkboxesArray = this.dynamicForm.get(formarrayname) as FormArray;
-
     if (event.target.checked) {
       checkboxesArray.push(this.formBuilder.control(event.target.value));
     } else {
@@ -567,694 +627,1571 @@ export class ProtocolComponent implements OnInit {
       checkboxesArray.removeAt(index);
     }
   }
+}
 
-  handleSingleCheckboxClick(event: any, value:any) {
-    if (event.target.checked) {
-      this.content_dict.content_modifier_check_box= value;
-    } else {
-      this.content_dict.content_modifier_check_box = undefined;
+object_check_box_change(event:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.content_modifier_object[field] = event.target.checked
     }
-  }
-
-  negateContentModifierContent(event: any) {
-    if (event.target.checked) {
-      this.content_dict.content_modifier_negate= true;
-    } else {
-      this.content_dict.content_modifier_negate = false;
-    }
-    console.log(this.content_dict)
-  }
-
-
-  handleSingleCheckboxClickForOrdgerTag(event: any, value:any, dict_name:any, content_match_name:any) {
-    if (event.target.checked) {
-      this.content_modifier_order_tag_dict[dict_name][content_match_name][value] = value;
-    } else {
-      this.content_modifier_order_tag_dict[dict_name][content_match_name][value] = undefined;
-    }
-
-  }
-
-  hideTable(table_name:any) {
-    if(table_name == 'content') {
-      this.showcontentTable = false
-      this.showContentMatchTable = false
-      this.disabledContentMatchButton = false
-    }
-  }
-
-
-/* ************************************
-* This section is to handle the http request and response section
-* ***********************************
-*/
-
-globalHttpDict:any = {}
-httpNgModelSelectDict:any = {}
-data_parameter:string[] = ['http_request_parameters', 'http_response_parameters', 'meta_keyword', 'tcp_parameters']
-dataDict:any = {}
-
-
-generate_content_modifier_for_html(){
-  for(let h in this.jsonData_http3) {
-    if(h == "common" || h=="content") {
-      continue
-    }
-    this.globalHttpDict[h]["select_supported_content_modifier"] = undefined
-    this.httpNgModelSelectDict[h] = undefined
-    this.globalHttpDict[h]["supported_content_modifier"] = {}
-
-    if(this.jsonData_http3[h]['supported_options']){
-    for(let k of this.jsonData_http3[h]['supported_options']) {
-      this.globalHttpDict[h][k] = undefined
-      
-      if(this.jsonData_keyword[k]["supported_content_modifier"]) {
-        for (let scm of this.jsonData_keyword[k]["supported_content_modifier"]) {
-          if(this.jsonData_keyword[scm]["html_tag_type"]==="ordered_tag_mandator_optional"){
-            this.globalHttpDict[h]["supported_content_modifier"][scm] = {}
-            for(let oname of this.jsonData_keyword[scm]["order_name"]) {
-              this.globalHttpDict[h]["supported_content_modifier"][scm][oname] = undefined
-            }
-          } else if(this.jsonData_keyword[scm]["html_tag_type"]==="text_with_checkbox") {
-            this.globalHttpDict[h]["supported_content_modifier"][scm] = {}
-            this.globalHttpDict[h]["supported_content_modifier"][scm]['text'] = undefined
-            this.globalHttpDict[h]["supported_content_modifier"][scm]['check_box_value'] = undefined
-          } else if(this.jsonData_keyword[scm]["html_tag_type"]==="dropdown_with_text") {
-            this.globalHttpDict[h]["supported_content_modifier"][scm] = {}
-            this.globalHttpDict[h]["supported_content_modifier"][scm]['text'] = undefined
-            this.globalHttpDict[h]["supported_content_modifier"][scm]['selected'] = undefined
-          }
-          else {
-            this.globalHttpDict[h]["supported_content_modifier"][scm] = undefined
-          }
-         
-        }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.content_modifier_object[field].push(event.target.value);
+      } else {
+        let index = this.content_modifier_object[field].indexOf(event.target.value)
+        this.content_modifier_object[field].splice(index, 1);
       }
-      
     }
-  }
-  }
-}
-
-generateGlobalHttpDict() {
-  for(let h in this.jsonData_http3) {
-    if(h == "common" || h=="content") {
-      continue
-    }
-    this.dataDict[h] = {}
-    this.dataDict[h]['rows_to_display'] = []
-    this.dataDict[h]['showDataTable'] = false
-
-
-    this.globalHttpDict[h] = {}
-    this.globalHttpDict[h]['showTable'] = false
-    this.globalHttpDict[h]['showContentModifierTable'] = false
-    this.globalHttpDict[h]['showErrorMessage'] = false
-    this.globalHttpDict[h]['errorMessage'] = ''
-    this.globalHttpDict[h]['negate_match'] = false
-  }
-
-  this.generate_content_modifier_for_html()
-
-  //console.log("data dict")
-  //console.log(this.dataDict)
-  //console.log(this.globalHttpDict)
-}
-
-displayHttpContentTable(table_id:any) {
-  this.globalHttpDict[table_id]['showTable'] = true
-}
-
-negate_http_content(event:any, http_options:any) {
-  if (event.target.checked) {
-    this.globalHttpDict[http_options].negate_match= true;
   } else {
-    this.globalHttpDict[http_options].negate_match= false;
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.content_modifier_object[field][oName] = event.target.checked
+    } 
+
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.content_modifier_object[field][oName].push(event.target.value);
+      } else {
+        let index = this.content_modifier_object[field][oName].indexOf(event.target.value)
+        this.content_modifier_object[field][oName].splice(index, 1);
+      }
+    }
+  }
+}
+
+object_check_box_change_for_common_field(event:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.common_object_dict[field] = event.target.checked
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.common_object_dict[field].push(event.target.value);
+      } else {
+        let index = this.common_object_dict[field].indexOf(event.target.value)
+        this.common_object_dict[field].splice(index, 1);
+      }
+    }
+  } else {
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.common_object_dict[field][oName] = event.target.checked
+    } 
+
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.common_object_dict[field][oName].push(event.target.value);
+      } else {
+        let index = this.common_object_dict[field][oName].indexOf(event.target.value)
+        this.common_object_dict[field][oName].splice(index, 1);
+      }
+    }
   }
 }
 
 
-addHttpContentModifier(http_options_tabel:any, options:any) {
-  /*
-  for(let h of this.data_parameter) {
-    this.globalHttpDict[h]['showErrorMessage'] = false
-    this.globalHttpDict[h]['errorMessage'] = ''
-  }
-  */
+object_check_box_change_for_metakeyword(event:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.meta_keyword_object_dict[field] = event.target.checked
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.meta_keyword_object_dict[field].push(event.target.value);
+      } else {
+        let index = this.meta_keyword_object_dict[field].indexOf(event.target.value)
+        this.meta_keyword_object_dict[field].splice(index, 1);
+      }
+    }
+  } else {
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.meta_keyword_object_dict[field][oName] = event.target.checked
+    } 
 
-  for(let h in this.jsonData_http3) {
-    if(h == "common" || h=="content") {
-      continue
-    } else {
-      this.globalHttpDict[h]['showErrorMessage'] = false
-      this.globalHttpDict[h]['errorMessage'] = ''
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.meta_keyword_object_dict[field][oName].push(event.target.value);
+      } else {
+        let index = this.meta_keyword_object_dict[field][oName].indexOf(event.target.value)
+        this.meta_keyword_object_dict[field][oName].splice(index, 1);
+      }
     }
   }
+}
 
-  if(options === undefined || options =='') {
-    this.globalHttpDict[http_options_tabel]['showErrorMessage'] = true
-    this.globalHttpDict[http_options_tabel]['errorMessage'] = 'Value cannot be empty'
+object_check_box_change_for_protocol(event:any, proto_param:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.protocol_content_object_dict[proto_param][field] = event.target.checked
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.protocol_content_object_dict[proto_param][field].push(event.target.value);
+      } else {
+        let index = this.protocol_content_object_dict[proto_param][field].indexOf(event.target.value)
+        this.protocol_content_object_dict[proto_param][field].splice(index, 1);
+      }
+    }
+  } else {
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.protocol_content_object_dict[proto_param][field][oName] = event.target.checked
+    } 
 
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.protocol_content_object_dict[proto_param][field][oName].push(event.target.value);
+      } else {
+        let index = this.content_modifier_object[field][oName].indexOf(event.target.value)
+        this.protocol_content_object_dict[proto_param][field][oName].splice(index, 1);
+      }
+    }
   }
+}
 
-  if(!(this.globalHttpDict[http_options_tabel]['showErrorMessage'])) {
-    this.globalHttpDict[http_options_tabel]['showContentModifierTable'] = true
+
+object_check_box_change_for_protocol_content_modifier(event:any, proto_param:any, field:any, oName:string = '') {
+  if(oName === '' || oName === undefined){
+    if(this.get_html_tag_type(field) == 'check_box') {
+      this.protocol_content_modifier_object_dict[proto_param][field] = event.target.checked
+    }
+    if(this.get_html_tag_type(field) == 'check_box_list') {
+      if (event.target.checked) {
+        this.protocol_content_modifier_object_dict[proto_param][field].push(event.target.value);
+      } else {
+        let index = this.protocol_content_modifier_object_dict[proto_param][field].indexOf(event.target.value)
+        this.protocol_content_modifier_object_dict[proto_param][field].splice(index, 1);
+      }
+    }
+  } else {
+    if(this.get_order_name_html_type(field, oName) == 'check_box') {
+      this.protocol_content_modifier_object_dict[proto_param][field][oName] = event.target.checked
+    } 
+
+    if(this.get_order_name_html_type(field, oName) == 'check_box_list') {
+      if (event.target.checked) {
+        this.protocol_content_modifier_object_dict[proto_param][field][oName].push(event.target.value);
+      } else {
+        let index = this.protocol_content_modifier_object_dict[field][oName].indexOf(event.target.value)
+        this.protocol_content_modifier_object_dict[proto_param][field][oName].splice(index, 1);
+      }
+    }
+  }
+}
+
+
+
+get_lable_description(field: string): string {
+  if(this.json_keyword[field].hasOwnProperty("lable_descrption")) {
+    return this.json_keyword[field].lable_descrption
+  }
+  return field
+}
+
+
+
+setValueInFormControl(controlName:any, newValue:any) {
+  if(this.is_form_array(controlName)) {
+    if(!this.dynamicForm.get(controlName)) {
+      this.dynamicForm.addControl(controlName, this.formBuilder.array([]));
+    } 
+    const formControl = this.dynamicForm.get(controlName) as FormArray;
+    formControl.setValue(newValue);
+  } else {
+    if(!this.dynamicForm.get(controlName)) {
+      this.dynamicForm.addControl(controlName, new FormControl(''));
+    } 
+    const formControl = this.dynamicForm.get(controlName) as FormControl;
+    formControl.setValue(newValue);
   }
   
 }
 
-onSelectionChange(http_options:any) {
-  this.globalHttpDict[http_options]['showContentModifierTable'] = false
-  this.globalHttpDict[http_options].select_supported_content_modifier = undefined
+sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-handleSingleCheckboxClickForData(event: any, value:any, http_options:any, modifier_name:any, modifier_attribute:any) {
-  console.log(event.target.checked, value, http_options, modifier_name, modifier_attribute)
-  if (event.target.checked) {
-    this.globalHttpDict[http_options]["supported_content_modifier"][modifier_name][modifier_attribute] = value
-  } else {
-    this.globalHttpDict[http_options]["supported_content_modifier"][modifier_name][modifier_attribute] = undefined
-  }
-  console.log(this.globalHttpDict)
+async delayedAction() {
+  await this.sleep(2000); // Sleep for 2000 milliseconds (2 seconds)
 }
 
-addAndCreateFormControl(http_options:any, option1:any, option2:any, option3:any, option4:any, negate_match:any) {
-  this.globalHttpDict[http_options]['showErrorMessage'] = false
-  this.globalHttpDict[http_options]['errorMessage'] = ''
 
-  console.log(http_options, option1, option2, option3, option4, negate_match)
-  let rc:boolean = this.validateDataInput(http_options, option1, option2, option3, option4)
-  if(rc) {
-    if(!(this.dataDict[http_options]["original_received_Data"])) {
-      this.dataDict[http_options]["original_received_Data"] = []
-    }
-    if(typeof option4 === 'object') {
-      this.dataDict[http_options]["original_received_Data"].push([http_options, option1, option2, option3, JSON.parse(JSON.stringify(option4)), negate_match])
+get_html_tag_type(field:string): string {
+  //console.log(field)
+  //console.log(this.json_keyword)
+  for (let i = 1; i <= 3; i++) {
+    if(this.json_keyword === undefined) {
+      this.delayedAction()
     } else {
-      this.dataDict[http_options]["original_received_Data"].push([http_options, option1, option2, option3, option4, negate_match])
+      break
     }
-    
-  
-    
-    console.log("HTTP DATA DICT")
-    console.log(this.dataDict)
-
-    if (this.protocol.toLowerCase() == 'http'){
-
-    }
-    this.processDataDict() 
-    //this.clear_selected_option(http_options)
-    
   }
-
+  return this.json_keyword[field]["html_tag_type"]
 }
 
-
-
-validateDataInput(http_options:any, option1:any, option2:any, option3:any, option4:any): boolean {
-  if(this.jsonData_keyword[option1]["html_tag_type"] == 'na') {
-    if(option2 !== undefined && option3 !== undefined && option3 !== undefined) {
-      this.globalHttpDict[http_options]['showErrorMessage'] = true
-      this.globalHttpDict[http_options]['errorMessage'] = 'Value should be empty'
-      return false
-    }
+is_form_array(field:string): boolean {
+  let t_html_tag_type = this.get_html_tag_type(field)
+  if(this.valid_html_tags[t_html_tag_type] === "form_array") {
     return true
-  } 
-  if (this.jsonData_keyword[option1]["html_tag_type"] != 'ordered_tag_mandator_optional') {
-    if(option2 === undefined) {
-      this.globalHttpDict[http_options]['showErrorMessage'] = true
-      this.globalHttpDict[http_options]['errorMessage'] = 'Value for '+ option1 + ' cannot be empty'
-      return false
-    }
-  } 
-  if (option3 !== undefined && option3 !='') {
-    if(this.jsonData_keyword[option3]["html_tag_type"] == 'na') {
-      if(option4 !== undefined && option4 != '') {
-        this.globalHttpDict[http_options]['showErrorMessage'] = true
-      this.globalHttpDict[http_options]['errorMessage'] = "Value should be empty for " + option3
+  }
+  return false
+}
+
+get_order_name_list(field:string): string[] {
+  return this.json_keyword[field]["order_name"]
+}
+
+get_order_name_html_type(field:string, order_name:string): string {
+  let index_of_order_name = this.getIndexOfOrderTag(field, order_name)
+  return this.json_keyword[field]["order"][index_of_order_name]
+}
+
+getIndexOfOrderTag(key:string, value:string) {
+  return this.json_keyword[key]["order_name"].indexOf(value)
+}
+
+get_drop_down_dict_for_order(field:string, order_name:string):any {
+  if(this.json_keyword[field]["drop_down_dict"][order_name]) {
+    return this.json_keyword[field]["drop_down_dict"][order_name]
+  } else {
+    throw new Error("Drop down dict is not defined for order_name : " + order_name + " in " + field);
+  }
+}
+
+get_drop_down_dict(field:string):any {
+  
+  if(this.json_keyword[field]["drop_down_dict"]) {
+    return this.json_keyword[field]["drop_down_dict"]
+  } else {
+    console.log("missing drop down dict for " + field)
+    throw new Error("Drop down dict is not defined for order_name : " + field);
+  }
+}
+
+get_nested_form_group(field:string): FormGroup {
+  let fg = this.dynamicForm.get(field) as FormGroup
+  return fg
+}
+
+addContentMatch() {
+  this.showContentMatchTextBox = true
+  this.disabledContentMatchButton = true
+  this.showContentMatchTable = true
+  this.showcontentTable = true
+}
+
+negateContentModifierContent(event: any) {
+  if (event.target.checked) {
+    this.content_dict.content_modifier_negate= true;
+  } else {
+    this.content_dict.content_modifier_negate = false;
+  }
+}
+
+negate_protocol_content(event: any, proto_param:any) {
+  if (event.target.checked) {
+    this.protocol_content_dict.negate= true;
+  } else {
+    this.protocol_content_dict.negate = false;
+  }
+}
+
+get_content_modifier(): string[] {
+  return this.protocol_json_data['content']['supported_options']
+}
+
+clear_content_match_dict() {
+  this.content_dict["content_modifier_negate"] = false
+  this.content_dict["content_modifier_selected"] = undefined
+  this.content_match_text_box = undefined
+
+
+}
+
+add_content_modifier(content_string:any, negate:any, content_modifier:any) {
+  this.content_modifier_showErrorMessage = false
+  this.content_modifier_error_message = ""
+  if(content_string === '' || content_string === undefined) {
+    this.content_modifier_showErrorMessage = true
+    this.content_modifier_error_message = "** Please specify the content string"
+    return
+  } else {
+    this.content_modifier_showErrorMessage = false
+  }
+
+  if(content_modifier !== undefined) {
+    if(this.get_html_tag_type(content_modifier) !== 'na') {
+      if(this.validate_content_modifier(content_modifier)) {
+        this.content_modifier_showErrorMessage = true
+        return
       }
+    }
+    
+  }
+
+  if(content_modifier !== undefined && content_modifier != '') {
+    if(this.get_html_tag_type(content_modifier) !== 'na') {
+      this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, this.content_modifier_object[content_modifier]])
+      this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier + "=" + JSON.stringify(this.content_modifier_object[content_modifier])])
+    } else {
+      this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, undefined])
+      this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier, 'Not Applicable'])
+    }
+    
+  } else {
+    this.user_selected_content_modifier["rows"].push([content_string, negate, undefined, undefined])
+    this.user_selected_content_modifier["display"].push([content_string, negate, '', ''])
+  }
+
+  //console.log("dynamic for before process_content_modifier")
+  //console.log(this.dynamicForm.value)
+
+  this.process_content_modifier()
+  this.clear_content_match_dict()
+  if(content_modifier !== undefined) {
+    this.reset_content_modifier(content_modifier)
+  }
+
+}
+
+validate_content_modifier(content_modifier:string):boolean {
+  let temp_error_message:string = ''
+  if(!this.json_keyword[content_modifier].hasOwnProperty("is_mandatory") && !this.json_keyword[content_modifier].hasOwnProperty("mandatory_option")) {
+    if(this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
       return true
     }
-    if(typeof option4 !== 'object' && (option4 == '' || option4 === undefined)) {
-      this.globalHttpDict[http_options]['showErrorMessage'] = true
-      this.globalHttpDict[http_options]['errorMessage'] = 'Value for '+ option3 + ' cannot be empty'
-      return false
-    } 
-    //for ordered_tag_mandator_optional
-    let temp_error_msg = 'Please specify mandatory option '
-    let error_count = 0
-    this.content_modifier_showErrorMessage = false
-    if(this.jsonData_keyword[option3]['mandatory_option']){
-      for(let o of this.jsonData_keyword[option3]['mandatory_option']) {
-        if(option4[o] === '' || 
-          option4[o] === undefined) {
-          temp_error_msg = temp_error_msg  + o + " "
-          error_count +=1
-        }
+    if(this.get_object_type(this.content_modifier_object[content_modifier]) === 'array'){
+      if(this.content_modifier_object[content_modifier].length === 0) {
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
       }
     }
 
-    if(error_count>0){
-      this.globalHttpDict[http_options]['showErrorMessage'] = true
-      this.globalHttpDict[http_options]['errorMessage'] = temp_error_msg
-      return false
+    if(this.get_object_type(this.content_modifier_object[content_modifier]) === 'dict'){
+      if(Object.keys(this.content_modifier_object[content_modifier]).length === 0) {
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+        return true
+      }
+    }
+
+  }
+  if(this.json_keyword[content_modifier].hasOwnProperty("is_mandatory") && this.json_keyword[content_modifier]["is_mandatory"]) {
+    if(this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
     }
   }
+
+  if(this.json_keyword[content_modifier].hasOwnProperty("mandatory_option")) {
+    if( this.content_modifier_object[content_modifier] === undefined || this.content_modifier_object[content_modifier] === '') {
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + content_modifier
+      return true
+    } else if( Object.keys(this.content_modifier_object[content_modifier]).length === 0) { 
+      this.content_modifier_error_message = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[content_modifier]["mandatory_option"]) + " of " + content_modifier 
+      return true
+    } else {
+      let temp_error_list:any = []
+      for(let field of this.json_keyword[content_modifier]["mandatory_option"]) {
+        if(this.get_order_name_html_type(content_modifier, field) == 'check_box_list') {
+          if(this.content_modifier_object[content_modifier][field].length === 0) {
+            temp_error_list.push(field)
+            
+          } 
+        } else {
+          if(this.content_modifier_object[content_modifier][field] === undefined || this.content_modifier_object[content_modifier][field] === '') {
+            temp_error_list.push(field)
+          }
+        }
+      }
+      if(temp_error_list.length > 0) {
+        
+        this.content_modifier_error_message = "** Please specify the mandatory value for " + temp_error_list.join(",")
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+
+validate_common_part(): boolean {
+  let error_count = 0
+  
+  this.generateErrorMeesageDictForCommonField()
+  //console.log(this.common_object_dict)
+  for(let field of this.protocol_json_data["common"]["supported_options"]) {
+    if(!this.json_keyword[field].hasOwnProperty("is_mandatory") && !this.json_keyword[field].hasOwnProperty("mandatory_option")) {
+      if(this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+        this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+        this.common_field_help_and_error_message[field].showErrorMessage = true
+        error_count +=1
+      } else {
+        if(this.get_object_type(this.common_object_dict[field]) === 'array'){
+          if(this.common_object_dict[field].length === 0) {
+            this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+            this.common_field_help_and_error_message[field].showErrorMessage = true
+            error_count +=1
+          }
+        }
+
+        if(this.get_object_type(this.common_object_dict[field]) === 'dict'){
+          if(Object.keys(this.common_object_dict[field]).length === 0) {
+            this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+            this.common_field_help_and_error_message[field].showErrorMessage = true
+            error_count +=1
+          }
+        }
+      }
+   }
+
+   if(this.json_keyword[field].hasOwnProperty("is_mandatory") && this.json_keyword[field]["is_mandatory"]) {
+    if(this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+    }
+  }
+
+  if(this.json_keyword[field].hasOwnProperty("mandatory_option")) {
+    if( this.common_object_dict[field] === undefined || this.common_object_dict[field] === '') {
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + field
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+
+    } else if( Object.keys(this.common_object_dict[field]).length === 0) { 
+      this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[field]["mandatory_option"]) + " of " + field 
+      this.common_field_help_and_error_message[field].showErrorMessage = true
+      error_count +=1
+    } else {
+      let temp_error_list:any = []
+      for(let m of this.json_keyword[field]["mandatory_option"]) {
+        if(this.get_order_name_html_type(field, m) == 'check_box_list') {
+          if(this.common_object_dict[field][m].length === 0) {
+            temp_error_list.push(m)
+          } 
+        } else {
+          if(this.common_object_dict[field][m] === undefined || this.common_object_dict[field][m] === '') {
+            temp_error_list.push(m)
+          }
+        }
+      }
+      if(temp_error_list.length > 0) {
+        this.common_field_help_and_error_message[field].errorMessage = "** Please specify the mandatory value for " + temp_error_list.join(",")
+        this.common_field_help_and_error_message[field].showErrorMessage = true
+        error_count +=1
+      }
+    }
+  }
+}
+if(error_count > 1) {
   return true
 }
 
-processDataDict() {
-  let temp_dict:any = {}
-
-  for(let http_options in this.dataDict) {
-    this.dataDict[http_options]['rows_to_display'] = []
-    if(this.dataDict[http_options]["original_received_Data"] && this.dataDict[http_options]["original_received_Data"].length >0) {
-      if(! temp_dict[http_options]) {
-        temp_dict[http_options] ={}
-      }
-      for (let row of this.dataDict[http_options]["original_received_Data"]) {
-        let ho = row[0]
-        let supp_option = row[1]
-        let content_match = row[2]
-        let content_modifier = row[3]
-        let content_modifier_value = row[4]
-        let negate_match = row[5]
-        let negate_char = ''
-        let new_normalized_string = ''
-
-        if(negate_match) {
-          negate_char = '!'
-        }
-
-        if(! temp_dict[http_options][supp_option]) {
-          temp_dict[http_options][supp_option] ={}
-        }
-
-        if(this.jsonData_keyword[supp_option]["no_content"]) {
-          temp_dict[http_options][supp_option] ={}
-        } 
-
-        if(! temp_dict[http_options][supp_option][content_match]) {
-          temp_dict[http_options][supp_option][content_match] ={}
-          temp_dict[http_options][supp_option][content_match]["dict"] ={}
-          temp_dict[http_options][supp_option][content_match]["rows"] = []
-        }
-
-        
-        if(this.isValueRequiredInDoubleQuotes(supp_option)) { 
-          new_normalized_string = this.normalizeTheContentString(content_match, true)
-        } else {
-          new_normalized_string = this.normalizeTheContentString(content_match, false)
-        }
-
-        if(content_modifier === undefined && content_modifier_value === undefined) {
-          if(this.jsonData_keyword[supp_option]["no_content"]) {
-            temp_dict[http_options][supp_option][content_match]["dict"][supp_option] = negate_char + new_normalized_string
-            temp_dict[http_options][supp_option][content_match]["rows"].push(supp_option+ ':' + negate_char + new_normalized_string)
-          
-          } else {
-            if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] 
-              + ";" + negate_char + new_normalized_string
-            }else {
-              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string
-            }
-            temp_dict[http_options][supp_option][content_match]["rows"].push('content:' + negate_char + new_normalized_string)
-          }
-          
-
-        } else if (content_modifier !== undefined && content_modifier_value === undefined) {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] =  negate_char + new_normalized_string+ ';' + content_modifier
-            temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier)
-        } else if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
-              let temp_string_list: string[] = []
-              let value_seperator = ","
-              if (this.jsonData_keyword[content_modifier]["value_seperator"]) {
-                value_seperator = this.jsonData_keyword[content_modifier]["value_seperator"]
-              }
-              for(let orderName of this.jsonData_keyword[content_modifier]['order_name']) {
-                if (content_modifier_value[orderName] && content_modifier_value[orderName] !== undefined && content_modifier_value[orderName] != '') {
-                  temp_string_list.push(content_modifier_value[orderName])
-                }
-              }
-
-              if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";"+ content_modifier+ ":" + temp_string_list.join(value_seperator)
-              }else {
-                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator)
-              }
-
-              temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator))
-        } if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'string') {
-
-          if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";" + content_modifier + ':' + content_modifier_value
-          }else {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value
-          }
-
-          temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value)
-        }
-        //supp_option, content_match , content modifier , contet_modifier value
-        if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
-          let temp_string_list: string[] = []
-              let value_seperator = ","
-              if (this.jsonData_keyword[content_modifier]["value_seperator"]) {
-                value_seperator = this.jsonData_keyword[content_modifier]["value_seperator"]
-              }
-              for(let orderName of this.jsonData_keyword[content_modifier]['order_name']) {
-                if (content_modifier_value[orderName] && content_modifier_value[orderName] !== undefined && content_modifier_value[orderName] != '') {
-                  temp_string_list.push(content_modifier_value[orderName])
-                }
-              }
-              this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match, content_modifier, temp_string_list.join(value_seperator), negate_match])
-        } else {
-          this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match, content_modifier, content_modifier_value, negate_match])
-        }
-        
-
-        if(this.dataDict[http_options]['rows_to_display'].length >0) {
-          this.dataDict[http_options]['showDataTable']=true
-        } else {
-          this.dataDict[http_options]['showDataTable']=false
-        }
-
-      }
-    } else {
-      //Lenght is zero in case to handle 0 length data
-      this.dataDict[http_options]['showDataTable']=false
-
-
-      //delete the form control here
-
-    }
-
-  }
-
-  console.log(temp_dict)
-  this.generate_rule_format(temp_dict)
+return false
 }
 
+/*
 
-generate_rule_format(temp_dict:any) {
-  let temp_data_dict:any = {}
-  temp_data_dict['rows'] = {}
+*/
 
-  let temp_content:any =''
-  for(let http_options in temp_dict) {
-      for(let supp_option in temp_dict[http_options]) {
-        for(let content_match in temp_dict[http_options][supp_option]) {
-          if(http_options == 'meta_keyword') {
-            let form_control_name = http_options
-            if(this.jsonData_http3[http_options]["form_control_name"]) {
-              form_control_name = this.jsonData_http3[http_options]["form_control_name"]
-              if(! temp_data_dict[form_control_name]) {
-                temp_data_dict[form_control_name] = []
-              }
-            } else {
-              if(! temp_data_dict[http_options]) {
-                temp_data_dict[http_options] = []
-              }
-            }
-            
-            console.log(supp_option + ":" + content_match)
-            temp_data_dict[form_control_name].push(supp_option + ':' + content_match)
-            
-          } else {
-            let form_control_name = http_options
-            if(this.jsonData_http3[http_options]["form_control_name"]) {
-              form_control_name = this.jsonData_http3[http_options]["form_control_name"]
-              if(! temp_data_dict[form_control_name]) {
-                temp_data_dict[form_control_name] = []
-                temp_data_dict["rows"][form_control_name]=[]
-              }
-            } 
 
-            for(let key in temp_dict[http_options][supp_option][content_match]["dict"]) {
-              if(this.jsonData_keyword[supp_option]["no_content"]) {
-                temp_content = key + ":" + temp_dict[http_options][supp_option][content_match]["dict"][key]
-                temp_data_dict[form_control_name].push(temp_content)
-              } else {
-                temp_content = key + ":" + temp_dict[http_options][supp_option][content_match]["dict"][key]
-                if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
-                  console.log(supp_option + ';' + temp_content)
-                  temp_data_dict[form_control_name].push(supp_option + ';' + temp_content)
-                } else {
-                  console.log(temp_content + ';' + supp_option)
-                  temp_data_dict[form_control_name].push(temp_content + ';' + supp_option)
-                }
-             }
-            }
-
-            for(let r of temp_dict[http_options][supp_option][content_match]["rows"]) {
-              if(this.jsonData_keyword[supp_option]["no_content"]) {
-                temp_data_dict["rows"][form_control_name].push(r)
-              } else {
-                if('sticky_buffer' in this.jsonData_keyword[supp_option] && this.jsonData_keyword[supp_option]['sticky_buffer']) {
-                  console.log(supp_option + ';' + temp_content)
-                  temp_data_dict["rows"][form_control_name].push(supp_option + ';' + r)
-                } else {
-                  console.log(temp_content + ';' + supp_option)
-                  temp_data_dict["rows"][form_control_name].push(r + ';' + supp_option)
-                }
-              }
-
-            }
-          }
-        }
-      }
+show_content_modifier_table(): boolean {
+  if(this.user_selected_content_modifier["display"].length >0) {
+    return true
   }
-  this.setValueInFormControl("data", temp_data_dict)
+  return false
+}
+
+process_content_modifier() {
+  let temp_list:any = []
   
+  for(let row of this.user_selected_content_modifier["rows"]) {
+    let temp_dict:any = {}
+    let content_string = row[0]
+    let negate = row[1]
+    let content_modifer = row[2]
+    let content_modifier_obj = row[3]
+
+    temp_dict["content_string"] = content_string
+    temp_dict["negate"] = negate
+
+    if(content_modifer !== undefined && content_modifier_obj !== undefined) {
+      temp_dict["content_modifer"] = content_modifer
+      temp_dict["content_modifier_obj"] = content_modifier_obj
+    } 
+
+    if(content_modifer !== undefined && content_modifier_obj === undefined) {
+      temp_dict["content_modifer"] = content_modifer
+      temp_dict["content_modifier_obj"] = undefined
+    } 
+
+
+    temp_list.push(temp_dict)
+  }
+
+  if(this.dynamicForm.contains("content_modifier")) {
+    this.dynamicForm.removeControl("content_modifier")
+  }
+  
+  this.dynamicForm.addControl('content_modifier', this.formBuilder.control(temp_list))
+
+  //console.log("user_selected_content_modifier option  post process_content_modifier")
+  //console.log(this.user_selected_content_modifier)
+
+  //console.log("dynamic for post process_content_modifier")
+  //console.log(this.dynamicForm.value)
+
 }
 
-removeFromDataDict(http_options:any, index:any) {
-  this.dataDict[http_options]["original_received_Data"].splice(index, 1)
-  if (this.dataDict[http_options]["original_received_Data"].length ==0) {
-    this.dataDict[http_options]['showDataTable']=false
-  }
-  this.processDataDict()
-}
 
-getHexValue(c:string) {
-  let hex = c.charCodeAt(0).toString(16).toUpperCase();
-  if(hex.length ==1) {
-    hex = '0'+hex
+get_object_type(obj:any): string {
+  if(typeof obj === 'string') {
+    return 'string'
   }
-  return hex
-}
-normalizeTheContentString(content_string:string, double_quotes:boolean=true): string {
-  let newstring: string = ''
-  let string_length = content_string.length
-  let char_list = content_string.split('')
- 
-  for(let i=0;i<string_length; i++){
-    if(i != string_length) {
-      if(char_list[i] === '\\') {
-        if(char_list[i+1] === 'r' || char_list[i+1] === 'n') {
-          newstring= newstring + '|'+this.getHexValue(char_list[i] + char_list[i+1])+'|'
-          i = i+1
-      }
+  if(typeof obj === 'object') {
+    if(Array.isArray(obj)) {
+      return "array"
     } else {
-      if(this.specialCharacterPattern.test(char_list[i])) {
-        newstring= newstring + '|'+this.getHexValue(char_list[i])+'|'
-      } else {
-        newstring= newstring + char_list[i]
-      }
-    }
+      return "dict"
     }
   }
+  return "undefined"
+}
 
-  newstring = newstring.replace(/\|\|/g, ' ');
-  if (double_quotes) {
-    return '"' + newstring + '"'
-  } 
+get_default_value(field:string): string {
+  //console.log("default  " + field)
+  if(this.json_keyword[field].hasOwnProperty("default_value")) {
+    //console.log("default " + field + " " + this.json_keyword[field]["default_value"])
+    return this.json_keyword[field]["default_value"]
+  }
+  return ''
+}
 
-  return newstring
- 
+getDictionaryKeys(dictionary: { [key: string]: any }): string[] {
+  return Object.keys(dictionary);
+}
+
+removeFromDataDict(index:any) {
+  this.user_selected_content_modifier["rows"].splice(index, 1)
+  this.user_selected_content_modifier["display"].splice(index, 1)
+  this.process_content_modifier()
+}
+
+get_protocol_detail_list(): string[] {
+  let temp_list:string[] = []
+  for(let t_dict of this.protocol_json_data['protocol']) {
+    temp_list.push(...Object.keys(t_dict))
+  }
+  return temp_list
 }
 
 
-generate_suricata_rule() {
-  this.generateErrorMeesageDictForCommonField()
-  let error_count = 0
-  //console.log(this.common_part_error_message_dict)
-  /* Perform the validation first */
-  for(let key in this.dynamicForm.value) {
-    if(key in this.jsonData_keyword) {
-      if(this.jsonData_keyword[key].hasOwnProperty("is_mandatory") && this.jsonData_keyword[key]["is_mandatory"]) {
-        if(this.dynamicForm.value[key] === undefined || this.dynamicForm.value[key]== "") {
-          error_count +=1
-          this.common_part_error_message_dict[key].showErrorMessage = true
-          this.common_part_error_message_dict[key].errorMessage = "** Please specify value for " + key
+get_protocol_user_table_header_names(item:string): [] {
+  for(let t_dict of this.protocol_json_data['protocol']) {
+    if(Object.keys(t_dict).includes(item)) {
+      return t_dict[item]["supported_options_table_headers"]
+    }
+  }
+  return []
+}
+
+get_protocol_supported_options(item:string): [] {
+  for(let t_dict of this.protocol_json_data['protocol']) {
+    if(Object.keys(t_dict).includes(item)) {
+      return t_dict[item]["supported_options"]
+    }
+  }
+  return []
+}
+
+
+prepare_protocol_content_dict() {
+  for(let proto_param of this.get_protocol_detail_list()) {
+    if(!this.protocol_content_dict.hasOwnProperty(proto_param)) {
+      this.protocol_content_dict[proto_param] = {}
+    }
+    this.protocol_content_dict[proto_param]["show_protocol_selection_table"] = false
+    this.protocol_content_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_dict[proto_param]["error_message"] = ''
+    this.protocol_content_dict[proto_param]["selected"] = undefined
+    this.protocol_content_dict[proto_param]["show_content_modifier_table"] = false
+    this.protocol_content_dict[proto_param]["negate"] = false
+  }
+}
+
+prepare_protocol_content_modifier_dict() {
+  for(let proto_param of this.get_protocol_detail_list()) {
+    if(!this.protocol_content_modifier_dict.hasOwnProperty(proto_param)) {
+      this.protocol_content_modifier_dict[proto_param] = {}
+    }
+    this.protocol_content_modifier_dict[proto_param]["show_protocol_selection_table"] = false
+    this.protocol_content_modifier_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_modifier_dict[proto_param]["error_message"] = ''
+    this.protocol_content_modifier_dict[proto_param]["selected"] = undefined
+    this.protocol_content_modifier_dict[proto_param]["show_content_modifier_table"] = false
+    this.protocol_content_modifier_dict[proto_param]["negate"] = false
+  }
+}
+
+show_protocol_content_user_selection_table(proto_param:string) {
+  this.protocol_content_dict[proto_param]['show_protocol_selection_table'] = true
+}
+
+display_protocol_content_user_selection_table(proto_param:string): boolean {
+ return this.protocol_content_dict[proto_param]['show_protocol_selection_table']
+}
+
+display_protocol_error_message(proto_param:string): boolean {
+  return this.protocol_content_dict[proto_param]["show_error_message"]
+}
+
+protocol_error_message(proto_param:string): string {
+  return this.protocol_content_dict[proto_param]["error_message"]
+}
+
+
+
+display_protocol_modifier_error_message(proto_param:string): boolean {
+  return this.protocol_content_modifier_dict[proto_param]["show_error_message"]
+}
+
+get_protocol_modifier_error_message(proto_param:string): string {
+  return this.protocol_content_modifier_dict[proto_param]["error_message"]
+}
+
+on_selection_change(proto_param:any) {
+  this.protocol_content_dict[proto_param]['show_content_modifier_table'] = false
+}
+
+show_protocol_content_modifier_table(proto_param:any) {
+  this.protocol_content_dict[proto_param]['show_content_modifier_table'] = true
+}
+
+display_protocol_content_modifier_table(proto_param:any): boolean {
+  return this.protocol_content_dict[proto_param]['show_content_modifier_table']
+}
+
+display_protocol_add_content_modifier_button(field:any): boolean {
+  if(this.json_keyword[field].hasOwnProperty("supported_content_modifier") 
+  && this.json_keyword[field]["supported_content_modifier"].length>0) {
+    return true
+  }
+  return false
+}
+
+get_protocol_content_modifier_table_header(proto_param:string): string[] {
+  for(let t_dict of this.protocol_json_data['protocol']) {
+    if(Object.keys(t_dict).includes(proto_param)) {
+      return t_dict[proto_param]["content_modifier_table_headers"]
+    }
+  }
+  return []
+}
+
+get_user_selection_table_headers(proto_param:string): string[] {
+  for(let t_dict of this.protocol_json_data['protocol']) {
+    if(Object.keys(t_dict).includes(proto_param)) {
+      return t_dict[proto_param]["user_selection_table_headers"]
+    }
+  }
+  return []
+}
+
+deepCopy(obj: any): any {
+  if(obj === undefined) {
+    return undefined
+  }
+  return JSON.parse(JSON.stringify(obj));
+}
+
+  add_user_selected_protocol_details(proto_param:any) {
+
+    this.protocol_content_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_dict[proto_param]["error_message"] = ''
+
+    this.protocol_content_modifier_dict[proto_param]["show_error_message"] = false
+    this.protocol_content_modifier_dict[proto_param]["error_message"] = ''
+
+    if(this.validate_protocol_inputs(proto_param)) {
+      this.protocol_content_dict[proto_param]["show_error_message"] = true
+      this.protocol_content_modifier_dict[proto_param]["show_error_message"] = true
+      return
+    }
+
+    let protocol_content_selected = this.protocol_content_dict[proto_param].selected
+    let negate = this.protocol_content_dict[proto_param].negate
+    let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
+    let protocol_content_value = this.deepCopy(this.protocol_content_object_dict[proto_param][protocol_content_selected])
+    let protocol_modifier_value = undefined
+    if(protocol_modifier_selected !== undefined) {
+      protocol_modifier_value = this.deepCopy(this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected])
+    }
+     
+
+    //console.log(proto_param, protocol_content_selected, protocol_content_value, negate, protocol_modifier_selected, protocol_modifier_value)
+    
+    if(protocol_content_selected !== undefined || protocol_content_selected !== '') {
+      this.user_selected_protocol_details[proto_param]["rows"].push([protocol_content_selected, 
+        protocol_content_value, protocol_modifier_selected, protocol_modifier_value, negate])
+      if(protocol_modifier_selected === undefined) {
+        this.user_selected_protocol_details[proto_param]["display"].push([protocol_content_selected, 
+          JSON.stringify(protocol_content_value), '', '', negate])
+      
+      } else {
+        if(protocol_modifier_value === undefined) {
+          this.user_selected_protocol_details[proto_param]["display"].push([protocol_content_selected, 
+            JSON.stringify(protocol_content_value), protocol_modifier_selected, '', negate])
+        } else {
+          this.user_selected_protocol_details[proto_param]["display"].push([protocol_content_selected, 
+            JSON.stringify(protocol_content_value), protocol_modifier_selected, JSON.stringify(protocol_modifier_value), negate])
+        }
+
+      }
+    }
+  
+  this.process_protocol_dict()
+}
+
+validate_protocol_inputs(proto_param:string): boolean {
+  let protocol_content_selected = this.protocol_content_dict[proto_param].selected
+  let protocol_modifier_selected = this.protocol_content_modifier_dict[proto_param].selected
+  let protocol_content_value = this.protocol_content_object_dict[proto_param][protocol_content_selected]
+  let protocol_modifier_value = undefined
+  if(protocol_modifier_selected !== undefined) {
+    protocol_modifier_value = this.protocol_content_modifier_object_dict[proto_param][protocol_modifier_selected]
+  }
+   
+
+  //if(!this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+  if(this.check_attribute_present_and_false_if_not(protocol_content_selected, "is_mandatory")) {
+    if(protocol_content_value === undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    }
+    if(this.get_object_type(protocol_content_value) === 'array'){
+      if(protocol_content_value.length === 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+        return true
+      }
+    }
+
+    if(this.get_object_type(protocol_content_value) === 'dict'){
+      if(Object.keys(protocol_content_value).length === 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+        return true
+      }
+    }
+
+  }
+  /*
+  if(this.json_keyword[protocol_content_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_content_selected]["is_mandatory"]) {
+    if(protocol_content_value === undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    }
+  }
+  */
+  if(this.json_keyword[protocol_content_selected].hasOwnProperty("mandatory_option")) {
+    if( protocol_content_value=== undefined || protocol_content_value === '') {
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_content_selected
+      return true
+    } else if( Object.keys(protocol_content_value).length === 0) { 
+      this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[protocol_content_selected]["mandatory_option"]) + " of " + protocol_content_selected 
+      return true
+    } else {
+      let temp_error_list:any = []
+      for(let field of this.json_keyword[protocol_content_selected]["mandatory_option"]) {
+        if(this.get_order_name_html_type(protocol_content_selected, field) == 'check_box_list') {
+          if(protocol_content_value[field].length === 0) {
+            temp_error_list.push(field)
+          } 
+        } else {
+          if(protocol_content_value[field] === undefined || protocol_content_value[field] === '') {
+            temp_error_list.push(field)
+          }
         }
       }
+      if(temp_error_list.length > 0) {
+        this.protocol_content_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + temp_error_list.join(',')
+        return true
+      }
     }
   }
 
-  // If there is not error then proceed
-  if(error_count == 0) {
-    
-    let temp_rule_string = ''
-    let meta_keyword_string = ''
-    let dictionary = this.dynamicForm.value
-    let suricataRuleList = []
-    let content_modifier_str = ''
-    temp_rule_string+=dictionary['action'] + " " + this.protocol.toLowerCase() + " " + dictionary['source_ip'] + " " + dictionary['source_port']+ " ";
-    if (dictionary['flow_direction'] == "both") {
-      temp_rule_string+="<> ";
-    } else {
-      temp_rule_string+="-> ";
-    }
-    temp_rule_string+=dictionary['destination_ip'] + " " + dictionary['destination_port']
-    temp_rule_string+=' ('
-    temp_rule_string+='msg: "' + dictionary['msg'] + '";'
 
-    if(dictionary['flow'] && dictionary['flow'].length>0){
-      temp_rule_string+='flow:' + dictionary['flow'].join(',') + ';'
-    }
-    if(dictionary["content_modifier"] && dictionary["content_modifier"].length>0) {
-      content_modifier_str=dictionary["content_modifier"].join(';')
-      suricataRuleList.push(content_modifier_str)
-    }
+// this is for protocol content modifier
 
 
-    if(dictionary["data"]) {
-      for (let k in dictionary["data"]) {
-        if (k=='meta_keyword'){
-          meta_keyword_string+= dictionary["data"][k].join(';')
-        } else {
-          if(dictionary["data"][k].length >0) {
-            for (let r of dictionary["data"][k]) {
-              suricataRuleList.push(r)
+if(protocol_modifier_selected !== undefined){
+    if(this.check_attribute_present_and_false_if_not(protocol_modifier_selected, "is_mandatory")) {
+    //if(!this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && !this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
+      if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      }
+      if(this.get_object_type(protocol_modifier_value) === 'array'){
+        if(protocol_modifier_value.length === 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+          return true
+        }
+      }
+
+      if(this.get_object_type(protocol_modifier_value) === 'dict'){
+        if(Object.keys(protocol_modifier_value).length === 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+          return true
+        }
+      }
+
+    }
+    /*
+    if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("is_mandatory") && this.json_keyword[protocol_modifier_selected]["is_mandatory"]) {
+      if(protocol_modifier_value === undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      }
+    }
+    */
+    if(this.json_keyword[protocol_modifier_selected].hasOwnProperty("mandatory_option")) {
+      if( protocol_modifier_value=== undefined || protocol_modifier_value === '') {
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + protocol_modifier_selected
+        return true
+      } else if( Object.keys(protocol_content_value).length === 0) { 
+        this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + JSON.stringify(this.json_keyword[protocol_modifier_selected]["mandatory_option"]) + " of " + protocol_modifier_selected 
+        return true
+      } else {
+        let temp_error_list:any = []
+        for(let field of this.json_keyword[protocol_modifier_selected]["mandatory_option"]) {
+          if(this.get_order_name_html_type(protocol_modifier_selected, field) == 'check_box_list') {
+            if(protocol_modifier_value[field].length === 0) {
+              temp_error_list.push(field)
+            } 
+          } else {
+            if(protocol_modifier_value[field] === undefined || protocol_modifier_value[field] === '') {
+              temp_error_list.push(field)
             }
           }
         }
-        
+        if(temp_error_list.length > 0) {
+          this.protocol_content_modifier_dict[proto_param]["error_message"] = "** Please specify the mandatory value for " + temp_error_list.join(',')
+          return true
+        }
       }
     }
+}
+  return false
+}
 
-    let sid_rev_string ='sid:' +dictionary['sid'] + ";" + 'rev:' + dictionary['rev']
-    if (meta_keyword_string != '') {
-      sid_rev_string ='sid:' +dictionary['sid'] + ";" + 'rev:' + dictionary['rev'] + ';' + meta_keyword_string
-    }
-    let end_string =';)'
-    
-    if (suricataRuleList.length >0) {
-      for (let rule of suricataRuleList) {
-        this.final_suricata_rule_list.push(temp_rule_string + rule + ';' + sid_rev_string + end_string)
-      }
-    } else {
-      this.final_suricata_rule_list.push(temp_rule_string + sid_rev_string + end_string)
-    }
-    console.log(this.final_suricata_rule_list)
+get_user_selected_protocol_details_rows_for_table(proto_param:any) {
+  return this.user_selected_protocol_details[proto_param]["display"]
+}
+
+show_user_selected_table(proto_param:any): boolean {
+  if(this.user_selected_protocol_details[proto_param]["display"].length > 0) {
+    return true
+  }
+  return false
+}
+
+do_show_negate_for_protocol(field:any): boolean {
+  return this.check_attribute_present_and_true_if_not(field, "show_negate_option")
+}
+
+reset_protocol_object_dict(proto_param:any) {
+  this.protocol_content_modifier_dict[proto_param]["selected"] = undefined
+
+  this.protocol_content_object_dict = {}
+  this.protocol_content_modifier_object_dict = {}
+
+  //this.prepare_protocol_content_dict()
+  this.prepare_protocol_content_modifier_dict()
+  this.populate_protocol_object_dict()
+}
+
+
+remove_user_selection_entry(index:any, proto_param:any) {
+  this.user_selected_protocol_details[proto_param]["rows"].splice(index, 1)
+  this.user_selected_protocol_details[proto_param]["display"].splice(index, 1)
+  //TODO process protocol
+  //console.log(this.user_selected_protocol_details)
+  this.process_protocol_dict()
+}
+
+
+process_protocol_dict() {
+  let temp_list:any = []
+
+  for(let proto_param of Object.keys(this.user_selected_protocol_details)) {
+    temp_list.push(...this.user_selected_protocol_details[proto_param]["rows"])
+  }
+
+  if(this.dynamicForm.contains("protocol")) {
+    this.dynamicForm.removeControl("protocol")
+  }
+  
+  this.dynamicForm.addControl('protocol', this.formBuilder.control(temp_list))
+
+  console.log(this.dynamicForm.value)
+}
+
+add_meta_keyword(){
+  this.disable_meta_keyword = true
+  this.show_meta_keyword_table = true
+}
+
+get_meta_keyword_header_names(): string[] {
+  return this.protocol_json_data["meta_keyword"]["supported_options_table_headers"]
+}
+
+get_meta_keyword_supported_option(): string[] {
+  return this.protocol_json_data["meta_keyword"]["supported_options"]
+}
+
+add_user_selected_meta_keyword(field:any) {
+  this.user_selected_meta_keyword["rows"].push([field, this.meta_keyword_object_dict[field]])
+  if(this.meta_keyword_object_dict[field] !== undefined) {
+    this.user_selected_meta_keyword["display"].push([field, JSON.stringify(this.meta_keyword_object_dict[field])])
+  } else {
+    this.user_selected_meta_keyword["display"].push([field, ''])
+  }
+  //console.log(this.user_selected_meta_keyword)
+  this.process_user_selected_metakeyword()
+  }
+  
+ remove_user_selected_metakeyword(index:any) {
+  this.user_selected_meta_keyword["rows"].splice(index, 1)
+  this.user_selected_meta_keyword["display"].splice(index, 1)
+
+  //console.log(this.user_selected_meta_keyword)
+  this.process_user_selected_metakeyword()
+ }
+
+ process_user_selected_metakeyword() {
+  if(this.dynamicForm.contains("meta_keyword")) {
+    this.dynamicForm.removeControl("meta_keyword")
+  }
+  
+  this.dynamicForm.addControl('meta_keyword', this.formBuilder.control(this.user_selected_meta_keyword["rows"]))
+  //console.log(this.dynamicForm.value)
+ }
+
+ show_user_selected_meta_keyword_table(): boolean {
+  if(this.user_selected_meta_keyword["rows"].length > 0) {
+    return true
+  }
+  return false
+ }
+
+  get_user_selection_table_headers_for_meta_keyword(): string[] {
+   return this.protocol_json_data["meta_keyword"]["user_selection_table_headers"]
+  }
+
+  get_user_selected_meta_keyword(): string[] {
+    return this.user_selected_meta_keyword["display"]
   }
 
 
-}
+  generate_suricata_rules() {
+     this.final_suricata_rule_list = []
+     this.final_suricata_rule_check_status_list = []
+     this.generate_content_modifier_rules()
+     this.generate_protocol_rules()
+  }
 
-generateNumberedList(ruleList:any): string {
-  let numberedString = '';
-  ruleList.forEach((item:any, index:any) => {
-    numberedString += `${index + 1}. ${item}\n`;
-  });
-  return numberedString;
-}
+  generateNumberedList(ruleList:any): string {
+    let numberedString = '';
+    ruleList.forEach((item:any, index:any) => {
+      numberedString += `${index + 1}. ${item}\n`;
+    });
+    return numberedString;
+  }
 
-async checkRules() {
-  this.final_suricata_rule_check_status_list = []
-  if(this.final_suricata_rule_list.length > 0) {
-    for (const [index, rule] of this.final_suricata_rule_list.entries()) {
-      let pattern = /rule \d/i;
-      let text = ''
-      let timeout = 15000
-      
-      //let t = this.checkGeneratedSuricataRule(rule, index+1)
-      let check_url='http://' + this.server + '/validate_rule?check_rule=' + rule
-      console.log(check_url)
 
-      const request = await axios.get(check_url);
+  async checkRules() {
+    this.final_suricata_rule_check_status_list = []
+    if(this.final_suricata_rule_list.length > 0) {
+      for (const [index, rule] of this.final_suricata_rule_list.entries()) {
+        let timeout = 15000
+        
+        //let t = this.checkGeneratedSuricataRule(rule, index+1)
+        let check_url='http://' + this.server + '/validate_rule?check_rule=' + rule
+        console.log(check_url)
 
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Request timed out'));
-        }, timeout);
+        const request = await axios.get(check_url);
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Request timed out'));
+          }, timeout);
+        });
+
+      Promise.race([request, timeoutPromise])
+      .then((response: AxiosResponse) => {
+        console.log(response.data);
+          let text = response.data['error'];
+          let pattern = /rule \d/i;
+          let rule_index = index + 1
+          let replacedText = text.replace(pattern, 'Rule ' + rule_index);
+          let error_string_1 = 'mixes keywords with conflicting directions'
+          const regex = new RegExp(error_string_1);
+
+          if (regex.test(replacedText)) {
+            replacedText += ". Possible corrective action to check flow selection"
+          }
+
+
+
+          this.final_suricata_rule_check_status_list.push(replacedText)
+      }).catch((error: Error) => {
+        throw error;
       });
 
-    Promise.race([request, timeoutPromise])
-    .then((response: AxiosResponse) => {
-      console.log(response.data);
-        let text = response.data['error'];
-        let pattern = /rule \d/i;
-        let rule_index = index + 1
-        let replacedText = text.replace(pattern, 'Rule ' + rule_index);
-        /* 
-        1. Rule is OK
-2. Issue in the rule.  Rule 2 mixes keywords with conflicting directions
-3. Issue in the rule.  Rule 3 setup buffer http_uri but didn't add matches to it  
-        */
-        let error_string_1 = 'mixes keywords with conflicting directions'
-        const regex = new RegExp(error_string_1);
+      }
+      console.log(this.final_suricata_rule_check_status_list)
+    }
+  }
 
-        if (regex.test(replacedText)) {
-          replacedText += ". Possible corrective action to check flow selection"
+  get_string(key:any, value:any, negate:boolean = false): string {
+    let temp_string = ''
+    let key_value_separator= ':'
+    let value_seperator = ','
+    let negate_string = ''
+    let value_in_double_quotes = false
+
+    if(negate) {
+      negate_string = '!'
+    }
+
+    if(value === undefined) {
+      temp_string = key
+      return temp_string
+    }
+
+    //common part to handle
+    if(this.json_keyword[key]["key_value_separator"]) {
+      key_value_separator = this.json_keyword[key]["key_value_separator"]
+    }
+
+    if(this.json_keyword[key].hasOwnProperty("value_in_double_quotes") && !this.json_keyword[key]["value_in_double_quotes"]) {
+      value_in_double_quotes = false
+    }
+
+    if(this.json_keyword[key].hasOwnProperty("value_seperator")) {
+      value_seperator = this.json_keyword[key]["value_seperator"]
+    }
+
+
+    if(this.get_html_tag_type(key) === 'na') {
+      //save_user_input_with_prefix_as
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"][key]
+      } else {
+        temp_string = key
+      }
+      
+    }
+
+    if(this.get_html_tag_type(key) === 'text' || this.get_html_tag_type(key) === 'drop_down' ) {
+      let t_value = value
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_value = this.json_keyword[key]["save_user_input_with_prefix_as"][key] + ' ' + value
+      }
+      if(value_in_double_quotes) {
+        temp_string = key + key_value_separator + negate_string + '"' + t_value + '"'
+      } else {
+        temp_string = key + key_value_separator + negate_string + t_value 
+      }
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box') {
+      if(typeof value === 'boolean') {
+        if(value) {
+          temp_string = key
+        } else {
+          temp_string = ''
         }
+      } 
 
-
-
-        this.final_suricata_rule_check_status_list.push(replacedText)
-    }).catch((error: Error) => {
-      throw error;
-    });
-
-   
+      if(typeof value === 'string') {
+        if(key === value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
     }
-    console.log(this.final_suricata_rule_check_status_list)
-  }
-}
 
+    if(this.get_html_tag_type(key) === 'check_box_list') {
+      let t_str = ''
 
-get_help_string(key: string) {
-  const t_new_key = key.replace(':', '_').replace('.','_') as keyof typeof constants;
-  console.log(t_new_key)
-  if(constants[t_new_key]) {
-    return constants[t_new_key]
-  }
-  return ""
-}
+      if(this.get_object_type(value) === 'string') {
+        if(value === '') {
+          return ''
+        }
+        t_str = value
+      }
+      if(this.get_object_type(value) === 'array') {
+        if(value.length === 0) {
+          return ''
+        }
+        t_str = value.join(value_seperator)
+      }
 
-toggleHelp(field: string): void {
-  console.log(field)
-  for (let f in this.common_part_error_message_dict) { 
-    if(f != field) {
-      this.common_part_error_message_dict[f]["showHelpMessage"] = false
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_str = this.json_keyword[key]["save_user_input_with_prefix_as"][key] + ' ' + t_str
+      }
+
+      if(value_in_double_quotes) { 
+        temp_string = key + key_value_separator + negate_string + '"' + t_str + '"'
+      } else {
+        temp_string = key + key_value_separator + negate_string + t_str 
+      }
     }
-  }
-  if (field != 'all') {
-    this.common_part_error_message_dict[field]["showHelpMessage"] = !this.common_part_error_message_dict[field]["showHelpMessage"]
-  }
-}
 
-showNegationCheckBox(field: string): boolean {
-    if(this.jsonData_keyword[field].hasOwnProperty("show_negate_option")) {
-      if(this.jsonData_keyword[field]["show_negate_option"]) {
+    if(this.get_html_tag_type(key) === 'ordered_tag_mandatory_optional') {
+      let t_string_list = []
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) { 
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            if(this.json_keyword[key]["save_user_input_with_prefix_as"][oName]){
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + oName)
+              } else {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + value[oName])
+              }
+             
+            } else {
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(oName)
+              } else {
+                t_string_list.push(value[oName])
+              }
+              
+            }
+          }
+        }
+      } else {
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            t_string_list.push(value[oName])
+          }
+        }
+      }
+
+      if(t_string_list.length >0) {
+        if(value_in_double_quotes) { 
+          temp_string = key +  key_value_separator + negate_string + '"' + t_string_list.join(value_seperator) + '"'
+        } else {
+          temp_string = key +  key_value_separator + negate_string + t_string_list.join(value_seperator)
+        }
+      }
+
+
+    }
+
+    return temp_string
+
+  }
+
+  check_attribute_present_and_true_if_not(key:string, attribute:string): boolean {
+    if(this.json_keyword[key].hasOwnProperty(attribute)) {
+      if(this.json_keyword[key][attribute]) {
         return true
       } else {
         return false
       }
-    } 
-  return true
-}
-
-isValueRequiredInDoubleQuotes(field: string): boolean {
-  if(this.jsonData_keyword[field].hasOwnProperty("value_in_double_quotes")) {
-    if(this.jsonData_keyword[field]["value_in_double_quotes"]) {
-      return true
-    } else {
-      return false
     }
-  } 
-return true
-}
+    return true
+  }
+
+
+  check_attribute_present_and_false_if_not(key:string, attribute:string): boolean {
+    if(this.json_keyword[key].hasOwnProperty(attribute)) {
+      if(this.json_keyword[key][attribute]) {
+        return true
+      } else {
+        return false
+      }
+    }
+    return false
+  }
+
+
+  get_sticky_buffer_string(key:any, value:any, negate:boolean, value_in_double_quotes:boolean, key_value_separator=':'): string {
+    let temp_string = ''
+    let negate_string = ''
+    let is_sticky_buffer = this.check_attribute_present_and_false_if_not(key, "sticky_buffer")
+    let is_no_content = this.check_attribute_present_and_false_if_not(key, "no_content")
+
+    if(negate) {
+      negate_string = '!'
+    }
+
+    if(is_no_content) {
+      temp_string = key + key_value_separator + negate_string + this.get_value_string(key, value, value_in_double_quotes)
+    } else {
+      if(is_sticky_buffer){
+        temp_string = key + ';' + "content:" + negate_string + this.get_value_string(key, value, value_in_double_quotes)
+      } else {
+        temp_string = "content:" + negate_string + this.get_value_string(key, value, value_in_double_quotes) + ';' + key
+      }
+
+    }
+    return temp_string
+  }
+
+  get_protocol_string(key:any, value:any, negate:boolean = false): string {
+    let temp_string = ''
+    let key_value_separator= ':'
+    let value_in_double_quotes = this.check_attribute_present_and_true_if_not(key, "value_in_double_quotes")
+
+    if(this.json_keyword[key]["key_value_separator"]) {
+      key_value_separator = this.json_keyword[key]["key_value_separator"]
+    }
+
+    if(this.get_html_tag_type(key) === 'na') {
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"][key]
+      } else {
+        temp_string = key
+      }
+      
+    } else {
+      temp_string = this.get_sticky_buffer_string(key, value, negate, value_in_double_quotes, key_value_separator)
+    }
+
+    return temp_string
+
+  }
+
+
+  get_common_part_string(): string {
+    let skip_list = ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "flow_direction", "action"]
+    let dictionary = this.dynamicForm.value
+    let common_list = [dictionary["common_field"]['action'],  this.check_protocol.toLowerCase(),
+     dictionary["common_field"]['source_ip'], dictionary["common_field"]['source_port'], dictionary["common_field"]['flow_direction'], 
+     dictionary["common_field"]['destination_ip'], dictionary["common_field"]['destination_port']]
+     let temp_rule_string = common_list.join(" ") + ' ( msg: "' + dictionary["common_field"]["msg"] + '";'
+
+     for(let f of Object.keys(dictionary["common_field"])){
+      if(!skip_list.includes(f)) {
+        let k_str = this.get_string(f, dictionary["common_field"][f])
+        if(k_str != '') {
+          temp_rule_string +=  k_str + ';'
+        }
+        
+      }
+     }
+     return temp_rule_string
+  }
+
+  get_meta_keyword_string(): string {
+    let meta_keyword_string = ''
+    if(this.do_generate_rules_given_item("meta_keyword")) {
+      let meta_temp_list = []
+      for(let mk of this.dynamicForm.value["meta_keyword"]) {
+        meta_temp_list.push(this.get_string(mk[0], mk[1]))
+      }
+      meta_keyword_string = meta_temp_list.join(';')
+     }
+    return meta_keyword_string
+  }  
+
+  do_generate_rules_given_item(item:string): boolean {
+    if(this.dynamicForm.value.hasOwnProperty(item)) {
+      if(this.dynamicForm.value[item] !== undefined) {
+        if(this.dynamicForm.value[item].length>0) {
+          return true
+        }
+      }
+    } 
+    return false
+  }
+
+  generate_content_modifier_rules() {
+    if(this.do_generate_rules_given_item("content_modifier")){
+      this.final_suricata_rule_list = []
+      let temp_dict:any = {}
+      let temp_rule_content_string_part:any = {}
+  
+      let temp_rule_string = this.get_common_part_string()
+      let meta_keyword_string = this.get_meta_keyword_string()
+      let end_string = ';)'
+      for(let cm of this.dynamicForm.value["content_modifier"]) {
+        let negate_string = ''
+        let cm_string = ''
+        let final_rule = ''
+        let cont_mod_string = ''
+        if(cm["content_modifer"]!== undefined && cm["content_modifer"]!== '') {
+          cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+        }
+        
+        if(cm["negate"]) {
+          negate_string = "!" 
+        }
+        cm_string = "content:" + negate_string + '"' + this.normalizeTheContentString(cm["content_string"]) + '"'
+        if(meta_keyword_string === '') {
+          if(cont_mod_string !== '') {
+            final_rule = temp_rule_string + cm_string + ';' + cont_mod_string + end_string
+          } else {
+            final_rule = temp_rule_string + cm_string + end_string
+          }
+          
+          this.final_suricata_rule_list.push(final_rule)
+        } else {
+          if(cont_mod_string !== '') {
+            final_rule = temp_rule_string + cm_string + ';' + cont_mod_string +';' + meta_keyword_string + end_string
+          } else {
+            final_rule = temp_rule_string + cm_string + ';' + meta_keyword_string + end_string
+          }
+          
+          this.final_suricata_rule_list.push(final_rule)
+        }
+        
+  
+        let check_string = cm_string+'_' + cm["negate"].toString()
+        if(!temp_dict.hasOwnProperty(check_string)) {
+          if(cont_mod_string !== '' && cont_mod_string !== undefined) {
+            temp_dict[check_string] = []
+            temp_dict[check_string].push(cont_mod_string)
+          }
+          
+        } else {
+          if(cont_mod_string !== '' && cont_mod_string !== undefined) {
+            temp_dict[check_string].push(cont_mod_string)
+          }
+          
+        }
+  
+        if(!temp_rule_content_string_part.hasOwnProperty(check_string)) {
+          temp_rule_content_string_part[check_string] = cm_string
+        }
+      }
+  
+      for(let k of Object.keys(temp_dict)) {
+        let final_rule = ''
+        if(temp_dict[k].length>1) {
+          if(meta_keyword_string === '') {
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + ';' + temp_dict[k].join(';') + end_string
+            this.final_suricata_rule_list.push(final_rule)
+          } else {
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + ';' + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
+            this.final_suricata_rule_list.push(final_rule)
+          }
+         }
+        }
+    }
+ 
+    }
+
+  get_value_string(key:any, value:any, value_in_double_quotes:boolean): string {
+    let temp_string = ''
+    let value_seperator = ','
+
+    if(this.json_keyword[key].hasOwnProperty("value_seperator")) {
+      value_seperator = this.json_keyword[key]["value_seperator"]
+    }
+
+
+    if(this.get_html_tag_type(key) === 'na') {
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        temp_string = this.json_keyword[key]["save_user_input_with_prefix_as"]
+      }     
+    }
+
+    if(this.get_html_tag_type(key) === 'text' || this.get_html_tag_type(key) === 'drop_down' ) {
+      let t_value = value
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_value = this.json_keyword[key]["save_user_input_with_prefix_as"] + ' ' + value
+      }
+      temp_string = this.normalizeTheContentString(t_value)    
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box') {
+      if(typeof value === 'boolean') {
+        if(value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+
+      if(typeof value === 'string') {
+        if(key === value) {
+          temp_string = key
+        } else {
+          temp_string = ''
+        }
+      } 
+    }
+
+    if(this.get_html_tag_type(key) === 'check_box_list') {
+      let t_str = ''
+
+      if(this.get_object_type(value) === 'string') {
+        if(value === '') {
+          return ''
+        }
+        t_str = value
+      }
+      if(this.get_object_type(value) === 'array') {
+        if(value.length === 0) {
+          return ''
+        }
+        t_str = value.join(value_seperator)
+      }
+
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) {
+        t_str = this.json_keyword[key]["save_user_input_with_prefix_as"] + ' ' + t_str
+      }
+      temp_string = t_str
+
+    }
+
+    if(this.get_html_tag_type(key) === 'ordered_tag_mandatory_optional') {
+      let t_string_list = []
+      if(this.json_keyword[key].hasOwnProperty("save_user_input_with_prefix_as")) { 
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            if(this.json_keyword[key]["save_user_input_with_prefix_as"][oName]){
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + oName)
+              } else {
+                t_string_list.push(this.json_keyword[key]["save_user_input_with_prefix_as"][oName] + ' ' + value[oName])
+              }
+             
+            } else {
+              if(typeof value[oName] === 'boolean') {
+                t_string_list.push(oName)
+              } else {
+                t_string_list.push(value[oName])
+              }
+              
+            }
+          }
+        }
+      } else {
+        for(let oName of this.get_order_name_list(key)) {
+          if(value.hasOwnProperty(oName) && value[oName] !== undefined) {
+            t_string_list.push(value[oName])
+          }
+        }
+      }
+
+      temp_string = t_string_list.join(value_seperator)      
+    }
+
+    if(value_in_double_quotes) {
+      return '"' + temp_string + '"'
+    } else {
+      return temp_string
+    }
+  }
+
+  getHexValue(c:string) {
+    let hex = c.charCodeAt(0).toString(16).toUpperCase();
+    if(hex.length ==1) {
+      hex = '0'+hex
+    }
+    return hex
+  }
+
+  normalizeTheContentString(content_string:string): string {
+    let newstring: string = ''
+    let string_length = content_string.length
+    let char_list = content_string.split('')
+  
+    for(let i=0;i<string_length; i++){
+      if(i != string_length) {
+        if(char_list[i] === '\\') {
+          if(char_list[i+1] === 'r' || char_list[i+1] === 'n') {
+            newstring= newstring + '|'+this.getHexValue(char_list[i] + char_list[i+1])+'|'
+            i = i+1
+        }
+      } else {
+        if(this.specialCharacterPattern.test(char_list[i])) {
+          newstring= newstring + '|'+this.getHexValue(char_list[i])+'|'
+        } else {
+          newstring= newstring + char_list[i]
+        }
+      }
+      }
+    }
+
+    newstring = newstring.replace(/\|\|/g, ' ');
+    return newstring
+  }
+
+  
+  generate_protocol_rules() {
+    if(this.do_generate_rules_given_item("protocol")){
+      let temp_rule_string = this.get_common_part_string()
+      let meta_keyword_string = this.get_meta_keyword_string()
+      let end_string = ';)'
+      
+
+      let proto_opt_selected_dict:any = {}
+      let proto_opt_selected_dict_cm_string_dict:any = {}
+
+      for(let proto_option of this.dynamicForm.value["protocol"]) {
+        let final_rule = ''
+        let proto_opt_selected = proto_option[0]
+        let proto_opt_content = proto_option[1]
+        let proto_opt_cont_mod = proto_option[2]
+        let proto_opt_cont_mod_obj = proto_option[3]
+        let negate = proto_option[4]
+
+        let cm_string = this.get_protocol_string(proto_opt_selected, proto_opt_content, negate)
+
+        if(proto_opt_cont_mod !== undefined) {
+          let proto_str = proto_opt_selected + '_' + negate.toString()
+          if(proto_opt_content !== undefined) {
+            proto_str += '_' + proto_opt_content
+          }
+          if(!proto_opt_selected_dict.hasOwnProperty(proto_str)){
+            proto_opt_selected_dict[proto_str] = []
+          }
+
+          if(!proto_opt_selected_dict_cm_string_dict.hasOwnProperty(proto_str)){
+            proto_opt_selected_dict_cm_string_dict[proto_str] = cm_string
+          }
+          proto_opt_selected_dict[proto_str].push(this.get_string(proto_opt_cont_mod, proto_opt_cont_mod_obj))
+          cm_string += ';' + this.get_string(proto_opt_cont_mod, proto_opt_cont_mod_obj)
+        }
+
+        if(meta_keyword_string === '') {
+          final_rule = temp_rule_string + cm_string + end_string
+          this.final_suricata_rule_list.push(final_rule)
+        } else {
+          final_rule = temp_rule_string + cm_string +';' + meta_keyword_string + end_string
+          this.final_suricata_rule_list.push(final_rule)
+        }
+      }
+
+      if(Object.keys(proto_opt_selected_dict).length > 0) {
+        for(let proto_str of Object.keys(proto_opt_selected_dict)) {
+          if(proto_opt_selected_dict[proto_str].length > 1) {
+            
+            let cm_string = proto_opt_selected_dict_cm_string_dict[proto_str] + ';' + proto_opt_selected_dict[proto_str].join(';')
+            if(meta_keyword_string === '') {
+              let final_rule = temp_rule_string + cm_string + end_string
+              this.final_suricata_rule_list.push(final_rule)
+            } else {
+              let final_rule = temp_rule_string + cm_string +';' + meta_keyword_string + end_string
+              this.final_suricata_rule_list.push(final_rule)
+            }
+          }
+        }
+      }
+
+
+    }
+  }
+
+  special_handling_requires(key:string, obj:any) {
+
+  }
+  
+
+
 
 }

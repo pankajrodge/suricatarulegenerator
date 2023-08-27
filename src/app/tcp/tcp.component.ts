@@ -83,7 +83,6 @@ export class TcpComponent implements OnInit {
   ) {
     //console.log("constructor")
     this.dynamicForm = this.formBuilder.group({});
-
   }
 
 
@@ -132,28 +131,7 @@ export class TcpComponent implements OnInit {
     //console.log("ngit")
     this.protocol = this.check_protocol.toLowerCase()
     this.url_http = this.check_url
-    //console.log(this.protocol)
-    //console.log(this.url_http)
 
-/*
-    this.jsonService.getJsonData(this.url_keyword).subscribe((data1) => {
-      this.jsonData_keyword = data1;
-      //TODO have to create form control
-     //this.createFormControl();
-    
-    });
-    if(this.protocol != '' || this.protocol !== undefined) {
-    this.jsonService.getJsonData(this.url_http).subscribe((data2) => {
-      this.jsonData_http3 = data2;
-      this.createFormControlForCommonField()
-      //this.createAdditionalFormControl()
-      this.generateContentModifierOrdertagMandtoryDict()
-      //console.log(this.content_modifier_order_tag_dict)
-      this.generateErrorMeesageDictForCommonField()
-      this.generateGlobalHttpDict() 
-    });
-  }
-  */
   }
 
   onSubmit() {
@@ -756,6 +734,9 @@ handleSingleCheckboxClickForData(event: any, value:any, http_options:any, modifi
 addAndCreateFormControl(http_options:any, option1:any, option2:any, option3:any, option4:any, negate_match:any) {
   this.globalHttpDict[http_options]['showErrorMessage'] = false
   this.globalHttpDict[http_options]['errorMessage'] = ''
+  let temp_option_2 = ''
+  let temp_option_4 = ''
+
 
   console.log(http_options, option1, option2, option3, option4, negate_match)
   let rc:boolean = this.validateDataInput(http_options, option1, option2, option3, option4)
@@ -764,12 +745,24 @@ addAndCreateFormControl(http_options:any, option1:any, option2:any, option3:any,
       this.dataDict[http_options]["original_received_Data"] = []
     }
     if(typeof option4 === 'object') {
-      this.dataDict[http_options]["original_received_Data"].push([http_options, option1, option2, option3, JSON.parse(JSON.stringify(option4)), negate_match])
+      temp_option_4 = JSON.parse(JSON.stringify(option4))
     } else {
-      this.dataDict[http_options]["original_received_Data"].push([http_options, option1, option2, option3, option4, negate_match])
+      temp_option_4 = option4
     }
-    
-  
+
+    if(typeof option2 === 'object') {
+      if(this.jsonData_keyword[option1]["html_tag_type"] === 'text'){
+        temp_option_2 = option2['text']
+      } else {
+        temp_option_2 = JSON.parse(JSON.stringify(option2))
+      }
+      
+    } else {
+      temp_option_2 = option2
+    }
+
+    this.dataDict[http_options]["original_received_Data"].push([http_options, option1, temp_option_2, option3, temp_option_4, negate_match])
+
     
     console.log("HTTP DATA DICT")
     console.log(this.dataDict)
@@ -840,7 +833,8 @@ validateDataInput(http_options:any, option1:any, option2:any, option3:any, optio
 
 processDataDict() {
   let temp_dict:any = {}
-
+  console.log("Before processing content of this.dataDict")
+  console.log(this.dataDict)
   for(let http_options in this.dataDict) {
     this.dataDict[http_options]['rows_to_display'] = []
     if(this.dataDict[http_options]["original_received_Data"] && this.dataDict[http_options]["original_received_Data"].length >0) {
@@ -856,6 +850,14 @@ processDataDict() {
         let negate_match = row[5]
         let negate_char = ''
         let new_normalized_string = ''
+        let content_match_ntxt = content_match
+
+        if(typeof content_match === 'object') {
+          if(this.jsonData_keyword[supp_option]["html_tag_type"] === 'text') {
+            content_match_ntxt = content_match['text']
+          }
+
+        }
 
         if(negate_match) {
           negate_char = '!'
@@ -869,27 +871,13 @@ processDataDict() {
           temp_dict[http_options][supp_option] ={}
         } 
 
-        if(typeof content_match === 'object') {
-  
-          if(this.jsonData_keyword[supp_option]["html_tag_type"] === 'text') {
-            let content_match_ntxt = content_match['text']
-            if(! temp_dict[http_options][supp_option][content_match_ntxt]) {
-              temp_dict[http_options][supp_option][content_match_ntxt] ={}
-              temp_dict[http_options][supp_option][content_match_ntxt]["dict"] ={}
-              temp_dict[http_options][supp_option][content_match_ntxt]["rows"] = []
-            }
-           
+
+          if(! temp_dict[http_options][supp_option][content_match_ntxt]) {
+            temp_dict[http_options][supp_option][content_match_ntxt] ={}
+            temp_dict[http_options][supp_option][content_match_ntxt]["dict"] ={}
+            temp_dict[http_options][supp_option][content_match_ntxt]["rows"] = []
           }
-        } else if(typeof content_match === 'string') {
-          if(! temp_dict[http_options][supp_option][content_match]) {
-            temp_dict[http_options][supp_option][content_match] ={}
-            temp_dict[http_options][supp_option][content_match]["dict"] ={}
-            temp_dict[http_options][supp_option][content_match]["rows"] = []
-          }
-        }
-
-
-
+        
 
         if (typeof content_match === 'string') { 
           if(this.isValueRequiredInDoubleQuotes(supp_option)) { 
@@ -965,24 +953,21 @@ processDataDict() {
             temp_dict[http_options][supp_option][content_match]["dict"][supp_option] = negate_char + new_normalized_string
             temp_dict[http_options][supp_option][content_match]["rows"].push(supp_option+ ':' + negate_char + new_normalized_string)
             }
-
-
-
           
           } else {
-            if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] 
+            if( temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content']){
+              temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] 
               + ";" + negate_char + new_normalized_string
             }else {
-              temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string
+              temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = negate_char + new_normalized_string
             }
-            temp_dict[http_options][supp_option][content_match]["rows"].push('content:' + negate_char + new_normalized_string)
+            temp_dict[http_options][supp_option][content_match_ntxt]["rows"].push('content:' + negate_char + new_normalized_string)
           }
           
 
         } else if (content_modifier !== undefined && content_modifier_value === undefined) {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] =  negate_char + new_normalized_string+ ';' + content_modifier
-            temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier)
+            temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] =  negate_char + new_normalized_string+ ';' + content_modifier
+            temp_dict[http_options][supp_option][content_match_ntxt]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier)
         } else if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
               let temp_string_list: string[] = []
               let value_seperator = ","
@@ -995,22 +980,22 @@ processDataDict() {
                 }
               }
 
-              if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";"+ content_modifier+ ":" + temp_string_list.join(value_seperator)
+              if( temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content']){
+                temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] + ";"+ content_modifier+ ":" + temp_string_list.join(value_seperator)
               }else {
-                temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator)
+                temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator)
               }
 
-              temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator))
+              temp_dict[http_options][supp_option][content_match_ntxt]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier+ ":" + temp_string_list.join(value_seperator))
         } if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'string') {
 
-          if( temp_dict[http_options][supp_option][content_match]["dict"]['content']){
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = temp_dict[http_options][supp_option][content_match]["dict"]['content'] + ";" + content_modifier + ':' + content_modifier_value
+          if( temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content']){
+            temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] + ";" + content_modifier + ':' + content_modifier_value
           }else {
-            temp_dict[http_options][supp_option][content_match]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value
+            temp_dict[http_options][supp_option][content_match_ntxt]["dict"]['content'] = negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value
           }
 
-          temp_dict[http_options][supp_option][content_match]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value)
+          temp_dict[http_options][supp_option][content_match_ntxt]["rows"].push('content:'+ negate_char + new_normalized_string + ';' + content_modifier + ':' + content_modifier_value)
         }
         //supp_option, content_match , content modifier , contet_modifier value
         if (content_modifier !== undefined && content_modifier_value !== undefined && typeof content_modifier_value == 'object') {
@@ -1028,7 +1013,7 @@ processDataDict() {
               if(typeof content_match === 'object'){
                 this.dataDict[http_options]['rows_to_display'].push([supp_option, new_normalized_string, content_modifier, temp_string_list.join(value_seperator), negate_match])
               } else {
-                this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match, content_modifier, temp_string_list.join(value_seperator), negate_match])
+                this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match_ntxt, content_modifier, temp_string_list.join(value_seperator), negate_match])
               }
              
         } else {
@@ -1036,7 +1021,7 @@ processDataDict() {
           if(typeof content_match === 'object'){
             this.dataDict[http_options]['rows_to_display'].push([supp_option, new_normalized_string, content_modifier, content_modifier_value, negate_match])
           } else {
-            this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match, content_modifier, content_modifier_value, negate_match])
+            this.dataDict[http_options]['rows_to_display'].push([supp_option, content_match_ntxt, content_modifier, content_modifier_value, negate_match])
           }
 
           
@@ -1187,9 +1172,7 @@ normalizeTheContentString(content_string:string, double_quotes:boolean=true): st
   if (double_quotes) {
     return '"' + newstring + '"'
   } 
-
   return newstring
- 
 }
 
 
