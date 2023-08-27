@@ -917,15 +917,17 @@ add_content_modifier(content_string:any, negate:any, content_modifier:any) {
     this.content_modifier_showErrorMessage = false
   }
 
-  if(content_modifier !== undefined && this.get_html_tag_type(content_modifier) !== 'na') {
-    if(this.validate_content_modifier(content_modifier)) {
-      this.content_modifier_showErrorMessage = true
-      return
+  if(content_modifier !== undefined) {
+    if(this.get_html_tag_type(content_modifier) !== 'na') {
+      if(this.validate_content_modifier(content_modifier)) {
+        this.content_modifier_showErrorMessage = true
+        return
+      }
     }
+    
   }
 
-
-  if(content_modifier !== undefined || content_modifier != '') {
+  if(content_modifier !== undefined && content_modifier != '') {
     if(this.get_html_tag_type(content_modifier) !== 'na') {
       this.user_selected_content_modifier["rows"].push([content_string, negate, content_modifier, this.content_modifier_object[content_modifier]])
       this.user_selected_content_modifier["display"].push([content_string, negate, content_modifier + "=" + JSON.stringify(this.content_modifier_object[content_modifier])])
@@ -1660,6 +1662,11 @@ add_user_selected_meta_keyword(field:any) {
       negate_string = '!'
     }
 
+    if(value === undefined) {
+      temp_string = key
+      return temp_string
+    }
+
     //common part to handle
     if(this.json_keyword[key]["key_value_separator"]) {
       key_value_separator = this.json_keyword[key]["key_value_separator"]
@@ -1914,26 +1921,46 @@ add_user_selected_meta_keyword(field:any) {
         let negate_string = ''
         let cm_string = ''
         let final_rule = ''
-        let cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+        let cont_mod_string = ''
+        if(cm["content_modifer"]!== undefined && cm["content_modifer"]!== '') {
+          cont_mod_string = this.get_string(cm["content_modifer"], cm["content_modifier_obj"])
+        }
+        
         if(cm["negate"]) {
           negate_string = "!" 
         }
-        cm_string = "content:" + negate_string + '"' + this.normalizeTheContentString(cm["content_string"]) + '";'
+        cm_string = "content:" + negate_string + '"' + this.normalizeTheContentString(cm["content_string"]) + '"'
         if(meta_keyword_string === '') {
-          final_rule = temp_rule_string + cm_string + cont_mod_string + end_string
+          if(cont_mod_string !== '') {
+            final_rule = temp_rule_string + cm_string + ';' + cont_mod_string + end_string
+          } else {
+            final_rule = temp_rule_string + cm_string + end_string
+          }
+          
           this.final_suricata_rule_list.push(final_rule)
         } else {
-          final_rule = temp_rule_string + cm_string + cont_mod_string +';' + meta_keyword_string + end_string
+          if(cont_mod_string !== '') {
+            final_rule = temp_rule_string + cm_string + ';' + cont_mod_string +';' + meta_keyword_string + end_string
+          } else {
+            final_rule = temp_rule_string + cm_string + ';' + meta_keyword_string + end_string
+          }
+          
           this.final_suricata_rule_list.push(final_rule)
         }
         
   
         let check_string = cm_string+'_' + cm["negate"].toString()
         if(!temp_dict.hasOwnProperty(check_string)) {
-          temp_dict[check_string] = []
-          temp_dict[check_string].push(cont_mod_string)
+          if(cont_mod_string !== '' && cont_mod_string !== undefined) {
+            temp_dict[check_string] = []
+            temp_dict[check_string].push(cont_mod_string)
+          }
+          
         } else {
-          temp_dict[check_string].push(cont_mod_string)
+          if(cont_mod_string !== '' && cont_mod_string !== undefined) {
+            temp_dict[check_string].push(cont_mod_string)
+          }
+          
         }
   
         if(!temp_rule_content_string_part.hasOwnProperty(check_string)) {
@@ -1945,10 +1972,10 @@ add_user_selected_meta_keyword(field:any) {
         let final_rule = ''
         if(temp_dict[k].length>1) {
           if(meta_keyword_string === '') {
-            final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') + end_string
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + ';' + temp_dict[k].join(';') + end_string
             this.final_suricata_rule_list.push(final_rule)
           } else {
-            final_rule = temp_rule_string + temp_rule_content_string_part[k] + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
+            final_rule = temp_rule_string + temp_rule_content_string_part[k] + ';' + temp_dict[k].join(';') +';' + meta_keyword_string+ end_string
             this.final_suricata_rule_list.push(final_rule)
           }
          }
@@ -2159,6 +2186,9 @@ add_user_selected_meta_keyword(field:any) {
 
 
     }
+  }
+
+  special_handling_requires(key:string, obj:any) {
 
   }
   

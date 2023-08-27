@@ -5,6 +5,7 @@
     "file_data": {
         "html_tag_type": "na"
     },
+
     "flow_direction": {   
         "lable_descrption": "Flow Direction",
         "html_tag_type": "drop_down",
@@ -14,6 +15,8 @@
         },
         "is_mandatory": true
     },
+
+
     "gid": {
         "html_tag_type": "text",
         "key_value_separator": ":",
@@ -71,8 +74,12 @@
         "html_tag_type": "text"
     },
     "isdataat": {
-        "html_tag_type": "text_with_checkbox",
-        "check_box_value": "relative"
+        "html_tag_type": "ordered_tag_mandatory_optional",
+        "order": ["text", "check_box"],
+        "order_name": ["number_of_bytes*", "relative"],
+        "mandatory_option": ["number_of_bytes*"],
+        "value_seperator": ",",
+        "value_in_double_quotes": false
     },
 
     "bsize": {

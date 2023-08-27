@@ -1,22 +1,23 @@
 {
     "common": {
-        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", "flow_direction", "action", "flow"]
+        "supported_options": ["source_ip", "source_port", "destination_ip", "destination_port", "msg", "sid", "rev", 
+        "flow_direction", "action", "flow"]
     },
     "content": {
-        "supported_options": ["flow", "relative", "action", "nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
-        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace", 
-        "fast_pattern", "fast_pattern:only", "flowbits", "flowint", "stream_size"]
+        "supported_options": ["flow", "relative", "action", "nocase", "depth", "pcre", "replace", "startswith", 
+        "endswith", "offset", "distance", "within", "isdataat", "bsize", "dsize", "byte_test", "byte_math", 
+        "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace"]
     },
     "protocol": [
         {
             "http_request_parameters": {
-            "supported_options": ["http.uri", "byte_test", "relative", "flow", "http.uri.raw", "http.method", "http.request_line", "http.request_body", "http.header", 
+            "supported_options": ["http.uri", "http.uri.raw", "http.method", "http.request_line", "http.request_body", "http.header", 
             "http.header.raw", "http.cookie", "http.user_agent", "http.host", "http.host.raw", "http.accept", "http.accept_lang", 
             "http.accept_enc", "http.referer", "http.connection", "file.data", "http.content_type", "http.content_len", "http.start",
             "http.protocol", "http.header_names"],
 
-            "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Description"],
-            "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+            "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Need Help ?"],
+            "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Need Help ?"],
             "user_selection_table_headers":["HTTP Parameter", "Content Value", "Content Modifier", "Content Condition", "Negate Content"]
             }
         },
@@ -25,8 +26,8 @@
             "supported_options": ["http.stat_msg", "http.stat_code", "http.response_line", "http.header", "http.header.raw", "http.cookie", 
             "http.response_body", "http.server", "http.location", "file.data", "http.content_type", "http.content_len", 
             "http.start", "http.protocol", "http.header_names"],
-            "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Description"],
-            "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Description"],
+            "supported_options_table_headers":["Select HTTP Parameter", "Select Options", "Add Content Modifier", "Need Help ?"],
+            "content_modifier_table_headers":["Content Modifier", "Options", "Add Another", "Need Help ?"],
             "user_selection_table_headers":["HTTP Parameter", "Content Value", "Content Modifier", "Content Condition", "Negate Content"]
              }
          }
@@ -37,5 +38,7 @@
         "user_selection_table_headers":["Meta Keyword", "Value"]
     }
 }
+
+
 
 
