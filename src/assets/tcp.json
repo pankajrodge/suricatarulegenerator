@@ -4,8 +4,7 @@
     },
     "content": {
         "supported_options": ["nocase", "depth", "pcre", "replace", "startswith", "endswith", "offset", "distance", "within", 
-        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace", 
-        "fast_pattern", "fast_pattern:only", "flowbits", "flowint", "stream_size"]
+        "isdataat", "bsize", "dsize", "byte_test", "byte_math", "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace"]
     },
     "protocol": [
         {

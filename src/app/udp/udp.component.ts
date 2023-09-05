@@ -1688,7 +1688,6 @@ add_user_selected_meta_keyword(field:any) {
       } else {
         temp_string = key
       }
-      
     }
 
     if(this.get_html_tag_type(key) === 'text' || this.get_html_tag_type(key) === 'drop_down' ) {

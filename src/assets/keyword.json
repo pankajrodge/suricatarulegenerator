@@ -251,8 +251,9 @@
         "html_tag_type": "text",
         "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
     },
+
     "urilen": {
-        "html_tag_type": "dropdown_with_text",
+        "html_tag_type": "ordered_tag_mandatory_optional",
         "drop_down_dict": {
             "drop_down": {
                 "=": "=", 
@@ -262,8 +263,9 @@
             }
         },
         "order": ["drop_down", "text"],
-        "order_name": ["drop_down", "text"]
-    },    
+        "order_name": ["Operator", "urilen_value"]
+    },  
+
     "http.protocol": {
         "html_tag_type": "drop_down",
         "drop_down_dict": {
@@ -285,7 +287,8 @@
     },
     "http.user_agent": {
         "html_tag_type": "text",
-        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"]
+        "supported_content_modifier": ["depth", "distance", "offset", "nocase", "within"],
+        "sticky_buffer": true
     },
     "http.accept": {
         "html_tag_type": "text",
@@ -581,6 +584,7 @@
         "no_content": true,
         "value_in_double_quotes": false,
         "order": ["drop_down", "text"],
+        "show_negate_option": false,
         "value_seperator":"",
         "order_name": ["operator", "mss_value"],
         "drop_down_dict": {

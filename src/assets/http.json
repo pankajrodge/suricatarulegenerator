@@ -4,7 +4,7 @@
         "flow_direction", "action", "flow"]
     },
     "content": {
-        "supported_options": ["flow", "relative", "action", "nocase", "depth", "pcre", "replace", "startswith", 
+        "supported_options": ["nocase", "depth", "pcre", "replace", "startswith", 
         "endswith", "offset", "distance", "within", "isdataat", "bsize", "dsize", "byte_test", "byte_math", 
         "byte_jump", "byte_extract", "strip_whitespace", "compress_whitespace"]
     },
